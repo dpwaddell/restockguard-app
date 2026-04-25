@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router";
+
 const TABS = [
   { key: "home",      label: "Dashboard",  href: "/app" },
   { key: "waitlists", label: "Waitlists",  href: "/app/waitlists" },
@@ -8,6 +10,8 @@ const TABS = [
 ];
 
 export function PageHeader({ currentTab, plan }) {
+  const navigate = useNavigate();
+
   return (
     <div
       style={{
@@ -56,16 +60,17 @@ export function PageHeader({ currentTab, plan }) {
           const isActive = tab.key === currentTab;
           const isUpgrade = tab.key === "upgrade";
           return (
-            <a
+            <button
               key={tab.key}
-              href={tab.href}
+              onClick={() => navigate(tab.href)}
               style={{
                 display: "inline-block",
                 padding: "8px 14px",
                 borderRadius: "6px",
                 fontSize: "13px",
                 fontWeight: isActive ? "600" : "500",
-                textDecoration: "none",
+                border: "none",
+                cursor: "pointer",
                 backgroundColor: isActive
                   ? "#1a1a1a"
                   : isUpgrade && plan === "FREE"
@@ -82,7 +87,7 @@ export function PageHeader({ currentTab, plan }) {
               {isUpgrade && plan !== "FREE"
                 ? `Plan: ${plan.charAt(0) + plan.slice(1).toLowerCase()}`
                 : tab.label}
-            </a>
+            </button>
           );
         })}
       </nav>
