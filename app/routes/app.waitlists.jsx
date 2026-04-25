@@ -1,4 +1,4 @@
-import { Form, useLoaderData } from "react-router";
+import { Form, useLoaderData, useNavigate } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
 import { UpgradePrompt } from "../lib/upgrade-prompt";
@@ -98,6 +98,7 @@ export const action = async ({ request }) => {
 
 export default function WaitlistsPage() {
   const { subscribers, total, page, q, status, totalPages, plan } = useLoaderData();
+  const navigate = useNavigate();
 
   return (
     <s-page heading="Waitlists">
@@ -183,20 +184,21 @@ export default function WaitlistsPage() {
               <div style={{ fontSize: "14px", color: "#6d7175", marginBottom: "16px", maxWidth: "320px" }}>
                 Install the RestockGuard widget on your store theme to start collecting sign-ups.
               </div>
-              <a
-                href="/app/settings"
+              <button
+                onClick={() => navigate("/app/settings")}
                 style={{
                   padding: "8px 20px",
                   backgroundColor: "#1a56db",
                   color: "#fff",
                   borderRadius: "6px",
-                  textDecoration: "none",
+                  border: "none",
+                  cursor: "pointer",
                   fontSize: "14px",
                   fontWeight: "600",
                 }}
               >
                 Go to Settings
-              </a>
+              </button>
             </div>
           ) : (
             <>

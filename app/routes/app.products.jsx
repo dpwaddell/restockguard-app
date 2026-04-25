@@ -1,5 +1,5 @@
 import { useState, Fragment } from "react";
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, useNavigate } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
 import { UpgradePrompt } from "../lib/upgrade-prompt";
@@ -138,6 +138,7 @@ export default function ProductsPage() {
   );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const navigate = useNavigate();
 
   function handlePreorderToggle(productId) {
     const newValue = !preorderOn[productId];
@@ -264,9 +265,9 @@ export default function ProductsPage() {
                       {plan === "FREE" ? (
                         <span style={{ fontSize: "13px", color: "#6d7175" }}>
                           🔒{" "}
-                          <a href="/app/upgrade" style={{ color: "#1a56db", textDecoration: "none", fontWeight: "500" }}>
+                          <button onClick={() => navigate("/app/upgrade")} style={{ color: "#1a56db", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: "13px", fontWeight: "500" }}>
                             Starter+
-                          </a>
+                          </button>
                         </span>
                       ) : (
                         <span style={{ fontSize: "13px", color: "#6d7175" }}>
@@ -293,12 +294,12 @@ export default function ProductsPage() {
                         />
                         {plan === "FREE" && product.enabled && (
                           <div style={{ fontSize: "11px", marginTop: "4px" }}>
-                            <a
-                              href="/app/upgrade"
-                              style={{ color: "#6d7175", textDecoration: "none" }}
+                            <button
+                              onClick={() => navigate("/app/upgrade")}
+                              style={{ color: "#6d7175", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: "11px" }}
                             >
                               🔒 Starter+
-                            </a>
+                            </button>
                           </div>
                         )}
                       </fetcher.Form>

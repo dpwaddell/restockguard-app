@@ -1,4 +1,4 @@
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, useNavigate } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
 import { PageHeader } from "../components/PageHeader";
@@ -62,6 +62,7 @@ export const action = async ({ request }) => {
 export default function SettingsPage() {
   const { settings, plan } = useLoaderData();
   const fetcher = useFetcher();
+  const navigate = useNavigate();
   const saved = fetcher.data?.saved;
   const saving = fetcher.state !== "idle";
 
@@ -144,9 +145,9 @@ export default function SettingsPage() {
                     border: "1px solid #d1d5db",
                   }}
                 >
-                  <a href="/app/upgrade" style={{ color: "#1a56db", textDecoration: "none" }}>
+                  <button onClick={() => navigate("/app/upgrade")} style={{ color: "#1a56db", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: "12px" }}>
                     🔒 Upgrade to remove
-                  </a>
+                  </button>
                 </span>
               )}
             </div>
