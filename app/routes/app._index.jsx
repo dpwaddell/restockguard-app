@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
 import { PageHeader } from "../components/PageHeader";
@@ -123,6 +123,7 @@ function fmt(n) {
 export default function Index() {
   const { subscriberCount, alertsSent, conversions, revenue, topProducts, recentActivity, plan, shopDomain } =
     useLoaderData();
+  const navigate = useNavigate();
 
   return (
     <s-page heading={`${getGreeting()}, ${storeName(shopDomain)}`}>
@@ -134,21 +135,22 @@ export default function Index() {
             sold-out to test the full alert flow end-to-end.
           </s-paragraph>
           <div style={{ marginTop: "12px" }}>
-            <a
-              href="/app/settings"
+            <button
+              onClick={() => navigate("/app/settings")}
               style={{
                 display: "inline-block",
                 padding: "8px 16px",
                 backgroundColor: "#1a56db",
                 color: "#fff",
                 borderRadius: "6px",
-                textDecoration: "none",
+                border: "none",
+                cursor: "pointer",
                 fontSize: "14px",
                 fontWeight: "600",
               }}
             >
               View setup guide →
-            </a>
+            </button>
           </div>
         </s-banner>
       )}
@@ -214,9 +216,12 @@ export default function Index() {
                 {step}
               </div>
               <span style={{ flex: 1, fontSize: "14px", color: "#202223" }}>{text}</span>
-              <a href={href} style={{ fontSize: "14px", color: "#1a56db", textDecoration: "none", fontWeight: "600" }}>
+              <button
+                onClick={() => navigate(href)}
+                style={{ fontSize: "14px", color: "#1a56db", fontWeight: "600", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              >
                 Go →
-              </a>
+              </button>
             </div>
           ))}
         </div>
@@ -252,7 +257,7 @@ export default function Index() {
                   {plan === "FREE" && (
                     <td style={tdStyle}>
                       <span style={{ fontSize: "12px", color: "#6d7175" }}>
-                        🔒 <a href="/app/upgrade" style={{ color: "#1a56db", textDecoration: "none" }}>Starter+</a>
+                        🔒 <button onClick={() => navigate("/app/upgrade")} style={{ color: "#1a56db", background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: "12px" }}>Starter+</button>
                       </span>
                     </td>
                   )}
