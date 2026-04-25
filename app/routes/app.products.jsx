@@ -136,6 +136,8 @@ export default function ProductsPage() {
   const [preorderConfigs, setPreorderConfigs] = useState(
     Object.fromEntries(products.map((p) => [p.id, p.preorderConfig])),
   );
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   function handlePreorderToggle(productId) {
     const newValue = !preorderOn[productId];
@@ -151,6 +153,10 @@ export default function ProductsPage() {
       { method: "post" },
     );
   }
+
+  const visibleProducts = products
+    .filter((p) => statusFilter === "all" || p.status === statusFilter)
+    .filter((p) => p.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <s-page heading="Products">
@@ -173,7 +179,56 @@ export default function ProductsPage() {
             </div>
           </div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+          <>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
+                backgroundColor: "#fff",
+                padding: "16px",
+                borderRadius: "8px",
+                marginBottom: "16px",
+                border: "1px solid #e1e3e5",
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{
+                  flex: 1,
+                  border: "1px solid #e1e3e5",
+                  borderRadius: "8px",
+                  padding: "8px 12px",
+                  fontSize: "14px",
+                  outline: "none",
+                }}
+              />
+              <div style={{ display: "flex", gap: "4px" }}>
+                {["all", "active", "draft", "archived"].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    style={{
+                      padding: "6px 14px",
+                      borderRadius: "20px",
+                      border: "1px solid",
+                      borderColor: statusFilter === s ? "#1a56db" : "#e1e3e5",
+                      backgroundColor: statusFilter === s ? "#e8eefb" : "#fff",
+                      color: statusFilter === s ? "#1a56db" : "#6d7175",
+                      fontSize: "13px",
+                      fontWeight: statusFilter === s ? "600" : "400",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
               <tr style={{ backgroundColor: "#f6f6f7" }}>
                 <th style={thStyle}>Product</th>
@@ -185,7 +240,7 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {visibleProducts.map((product) => (
                 <Fragment key={product.id}>
                   <tr
                     style={{ borderTop: "1px solid #e1e3e5", cursor: "pointer" }}
@@ -367,6 +422,7 @@ export default function ProductsPage() {
               ))}
             </tbody>
           </table>
+          </>
         )}
       </s-section>
     </s-page>

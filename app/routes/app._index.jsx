@@ -161,12 +161,66 @@ export default function Index() {
             gap: "16px",
           }}
         >
-          <KpiCard value={fmt(subscriberCount)} label="Total Subscribers" />
-          <KpiCard value={fmt(alertsSent)} label="Alerts Sent (30d)" />
-          <KpiCard value={fmt(conversions)} label="Conversions (30d)" />
-          <KpiCard value={`£${revenue}`} label="Recovered Revenue (30d)" />
+          <KpiCard value={fmt(subscriberCount)} label="Total Subscribers" accentColor="#1a56db" />
+          <KpiCard value={fmt(alertsSent)} label="Alerts Sent (30d)" accentColor="#0ea5e9" />
+          <KpiCard value={fmt(conversions)} label="Conversions (30d)" accentColor="#7c3aed" />
+          <KpiCard value={`£${revenue}`} label="Recovered Revenue (30d)" accentColor="#059669" />
         </div>
       </s-section>
+
+      {subscriberCount === 0 && (
+        <div
+          style={{
+            backgroundColor: "#fff",
+            border: "1px solid #e1e3e5",
+            borderRadius: "10px",
+            padding: "24px",
+            marginBottom: "16px",
+          }}
+        >
+          <div style={{ fontSize: "16px", fontWeight: "700", color: "#202223", marginBottom: "20px" }}>
+            Get set up in 3 steps
+          </div>
+          {[
+            { step: 1, text: "Install the widget on your theme", href: "/app/settings" },
+            { step: 2, text: "Mark a product as sold out to test alerts", href: "/app/products" },
+            { step: 3, text: "Customise your widget styling", href: "/app/styling" },
+          ].map(({ step, text, href }) => (
+            <div
+              key={step}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+                padding: "14px 0",
+                borderBottom: step < 3 ? "1px solid #f1f2f3" : "none",
+              }}
+            >
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  backgroundColor: "#1a56db",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  flexShrink: 0,
+                }}
+              >
+                {step}
+              </div>
+              <span style={{ flex: 1, fontSize: "14px", color: "#202223" }}>{text}</span>
+              <a href={href} style={{ fontSize: "14px", color: "#1a56db", textDecoration: "none", fontWeight: "600" }}>
+                Go →
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
 
       <s-section heading="Top Requested Products">
         {topProducts.length === 0 ? (
@@ -263,16 +317,18 @@ export default function Index() {
   );
 }
 
-function KpiCard({ value, label }) {
+function KpiCard({ value, label, accentColor }) {
   return (
     <div
       style={{
         backgroundColor: "#fff",
         border: "1px solid #e1e3e5",
         borderRadius: "10px",
+        borderTop: `3px solid ${accentColor}`,
         padding: "20px 24px",
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
         minWidth: "160px",
+        textAlign: "center",
       }}
     >
       <div style={{ fontSize: "40px", fontWeight: "700", color: "#202223", lineHeight: 1.1 }}>
