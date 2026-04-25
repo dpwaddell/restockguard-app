@@ -112,7 +112,7 @@ export default function UpgradePage() {
               display: "grid",
               gridTemplateColumns: "repeat(4, 1fr)",
               gap: "16px",
-              minWidth: "760px",
+              minWidth: "900px",
             }}
           >
             {plans.map((plan) => {
@@ -158,8 +158,9 @@ export default function UpgradePage() {
                         ? "0 0 0 2px rgba(0,128,96,0.08)"
                         : "0 1px 4px rgba(0,0,0,0.06)",
                       borderRadius: "10px",
-                      padding: "24px 20px 20px",
+                      padding: "24px 24px 20px",
                       display: "flex",
+                      minWidth: "180px",
                       flexDirection: "column",
                       gap: "12px",
                       backgroundColor: "#fff",
@@ -205,7 +206,8 @@ export default function UpgradePage() {
                         padding: "0 0 0 16px",
                         fontSize: "14px",
                         color: "#202223",
-                        lineHeight: "1.9",
+                        lineHeight: "1.6",
+                        whiteSpace: "normal",
                       }}
                     >
                       {plan.features.map((f) => (
