@@ -209,7 +209,7 @@ export default function ProductsPage() {
                       {plan === "FREE" ? (
                         <span style={{ fontSize: "13px", color: "#6d7175" }}>
                           🔒{" "}
-                          <a href="/app/upgrade" style={{ color: "#008060", textDecoration: "none", fontWeight: "500" }}>
+                          <a href="/app/upgrade" style={{ color: "#1a56db", textDecoration: "none", fontWeight: "500" }}>
                             Starter+
                           </a>
                         </span>
@@ -380,7 +380,7 @@ function ToggleSwitch({ isOn, title, onClick, asButton }) {
     width: "44px",
     height: "24px",
     borderRadius: "12px",
-    backgroundColor: isOn ? "#008060" : "#d1d5db",
+    backgroundColor: isOn ? "#1a56db" : "#d1d5db",
     position: "relative",
     cursor: "pointer",
     transition: "background-color 0.2s",
@@ -463,7 +463,7 @@ const smallBtn = {
   padding: "7px 16px",
   borderRadius: "6px",
   border: "none",
-  backgroundColor: "#008060",
+  backgroundColor: "#1a56db",
   color: "#fff",
   fontSize: "13px",
   fontWeight: "600",

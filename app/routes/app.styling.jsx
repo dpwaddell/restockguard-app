@@ -298,7 +298,7 @@ function ProductPagePreview({ config }) {
         <div style={{ fontSize: "18px", fontWeight: "700", color: "#202223", marginBottom: "4px" }}>
           Sample Product
         </div>
-        <div style={{ fontSize: "16px", fontWeight: "600", color: "#008060", marginBottom: "16px" }}>
+        <div style={{ fontSize: "16px", fontWeight: "600", color: "#1a56db", marginBottom: "16px" }}>
           $29.99
         </div>
 
@@ -448,7 +448,7 @@ function SelectField({ label, value, onChange, options }) {
 const sectionLabel = { fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "#202223" };
 const primaryBtn = {
   padding: "10px 20px",
-  backgroundColor: "#008060",
+  backgroundColor: "#1a56db",
   color: "#fff",
   border: "none",
   borderRadius: "6px",

@@ -129,7 +129,7 @@ export default function UpgradePage() {
                         top: "-12px",
                         left: "50%",
                         transform: "translateX(-50%)",
-                        backgroundColor: "#008060",
+                        backgroundColor: "#1a56db",
                         color: "#fff",
                         fontSize: "11px",
                         fontWeight: "700",
@@ -148,9 +148,9 @@ export default function UpgradePage() {
                   <div
                     style={{
                       border: isCurrent
-                        ? "2px solid #008060"
+                        ? "2px solid #1a56db"
                         : isGrowth
-                        ? "2px solid #008060"
+                        ? "2px solid #1a56db"
                         : "1px solid #e1e3e5",
                       boxShadow: isCurrent
                         ? "0 0 0 3px rgba(0,128,96,0.15)"
@@ -225,7 +225,7 @@ export default function UpgradePage() {
                             style={{
                               width: "100%",
                               padding: "11px 16px",
-                              backgroundColor: "#008060",
+                              backgroundColor: "#1a56db",
                               color: "#fff",
                               border: "none",
                               borderRadius: "6px",
@@ -238,7 +238,7 @@ export default function UpgradePage() {
                           </button>
                         </fetcher.Form>
                       ) : isCurrent ? (
-                        <p style={{ margin: 0, fontSize: "14px", color: "#008060", fontWeight: "600" }}>
+                        <p style={{ margin: 0, fontSize: "14px", color: "#1a56db", fontWeight: "600" }}>
                           ✓ You're on this plan
                         </p>
                       ) : null}

@@ -19,8 +19,8 @@ export const loader = async ({ request }) => {
 
 const PLAN_PILL = {
   FREE:     { bg: "#f1f2f3", color: "#6d7175", label: "Free" },
-  STARTER:  { bg: "#e3f1ec", color: "#006640", label: "Starter" },
-  GROWTH:   { bg: "#ddf0e8", color: "#004c3f", label: "Growth" },
+  STARTER:  { bg: "#e8eefb", color: "#1240a8", label: "Starter" },
+  GROWTH:   { bg: "#dce8fb", color: "#0d2d8a", label: "Growth" },
   PREMIUM:  { bg: "#f3e8fd", color: "#6832a8", label: "Premium" },
 };
 

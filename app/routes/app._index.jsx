@@ -139,7 +139,7 @@ export default function Index() {
               style={{
                 display: "inline-block",
                 padding: "8px 16px",
-                backgroundColor: "#008060",
+                backgroundColor: "#1a56db",
                 color: "#fff",
                 borderRadius: "6px",
                 textDecoration: "none",
@@ -198,7 +198,7 @@ export default function Index() {
                   {plan === "FREE" && (
                     <td style={tdStyle}>
                       <span style={{ fontSize: "12px", color: "#6d7175" }}>
-                        🔒 <a href="/app/upgrade" style={{ color: "#008060", textDecoration: "none" }}>Starter+</a>
+                        🔒 <a href="/app/upgrade" style={{ color: "#1a56db", textDecoration: "none" }}>Starter+</a>
                       </span>
                     </td>
                   )}
@@ -230,7 +230,7 @@ export default function Index() {
                   alignItems: "center",
                   gap: "12px",
                   padding: "10px 14px",
-                  borderLeft: `3px solid ${event.type === "signup" ? "#008060" : "#2c6ecb"}`,
+                  borderLeft: `3px solid ${event.type === "signup" ? "#1a56db" : "#2c6ecb"}`,
                   borderBottom: "1px solid #f1f2f3",
                   backgroundColor: "#fff",
                   borderRadius: "0 4px 4px 0",
@@ -241,7 +241,7 @@ export default function Index() {
                     width: "8px",
                     height: "8px",
                     borderRadius: "50%",
-                    backgroundColor: event.type === "signup" ? "#008060" : "#2c6ecb",
+                    backgroundColor: event.type === "signup" ? "#1a56db" : "#2c6ecb",
                     flexShrink: 0,
                   }}
                 />

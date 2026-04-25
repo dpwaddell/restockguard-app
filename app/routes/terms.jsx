@@ -183,5 +183,5 @@ const lead = { fontSize: "16px", lineHeight: "1.7", color: "#3d4044", marginBott
 const section = { borderTop: "1px solid #e1e3e5", paddingTop: "28px", marginTop: "28px" };
 const h2 = { fontSize: "18px", fontWeight: "700", color: "#202223", marginBottom: "12px" };
 const ul = { paddingLeft: "24px", lineHeight: "1.9", color: "#3d4044", fontSize: "15px" };
-const link = { color: "#008060", textDecoration: "none" };
+const link = { color: "#1a56db", textDecoration: "none" };
 const footer = { borderTop: "1px solid #e1e3e5", marginTop: "40px", paddingTop: "24px", textAlign: "center", fontSize: "13px", color: "#6d7175" };

@@ -63,7 +63,7 @@ export function PageHeader({ currentTab, plan }) {
                 backgroundColor: isActive
                   ? "#1a1a1a"
                   : isUpgrade && plan === "FREE"
-                  ? "#008060"
+                  ? "#1a56db"
                   : "transparent",
                 color: isActive
                   ? "#fff"

@@ -125,7 +125,7 @@ export default function SettingsPage() {
                   width: "16px",
                   height: "16px",
                   cursor: plan === "FREE" ? "not-allowed" : "pointer",
-                  accentColor: "#008060",
+                  accentColor: "#1a56db",
                 }}
               />
               <label htmlFor="showBranding" style={{ fontSize: "14px", color: "#202223" }}>
@@ -144,7 +144,7 @@ export default function SettingsPage() {
                     border: "1px solid #d1d5db",
                   }}
                 >
-                  <a href="/app/upgrade" style={{ color: "#008060", textDecoration: "none" }}>
+                  <a href="/app/upgrade" style={{ color: "#1a56db", textDecoration: "none" }}>
                     🔒 Upgrade to remove
                   </a>
                 </span>
@@ -162,7 +162,7 @@ export default function SettingsPage() {
               width: "100%",
               maxWidth: "480px",
               padding: "12px 20px",
-              backgroundColor: saving ? "#6d7175" : "#008060",
+              backgroundColor: saving ? "#6d7175" : "#1a56db",
               color: "#fff",
               border: "none",
               borderRadius: "6px",

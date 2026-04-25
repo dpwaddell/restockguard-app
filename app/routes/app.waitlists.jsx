@@ -153,13 +153,13 @@ export default function WaitlistsPage() {
                 style={{
                   padding: "6px 16px",
                   borderRadius: "20px",
-                  backgroundColor: status === tab ? "#008060" : "#f1f2f3",
+                  backgroundColor: status === tab ? "#1a56db" : "#f1f2f3",
                   color: status === tab ? "#fff" : "#202223",
                   textDecoration: "none",
                   fontSize: "13px",
                   fontWeight: status === tab ? "600" : "400",
                   textTransform: "capitalize",
-                  border: status === tab ? "1px solid #008060" : "1px solid #d1d5db",
+                  border: status === tab ? "1px solid #1a56db" : "1px solid #d1d5db",
                   transition: "all 0.15s",
                 }}
               >
@@ -187,7 +187,7 @@ export default function WaitlistsPage() {
                 href="/app/settings"
                 style={{
                   padding: "8px 20px",
-                  backgroundColor: "#008060",
+                  backgroundColor: "#1a56db",
                   color: "#fff",
                   borderRadius: "6px",
                   textDecoration: "none",
