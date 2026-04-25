@@ -18,7 +18,7 @@ export const loader = async ({ request }) => {
     try {
       const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: ["Starter", "Growth", "Premium"],
-        isTest: process.env.NODE_ENV !== "production",
+        isTest: process.env.SHOPIFY_BILLING_TEST !== "false",
       });
 
       if (hasActivePayment && appSubscriptions?.length > 0) {
@@ -45,23 +45,37 @@ export const action = async ({ request }) => {
   const formData = await request.formData();
   const planName = formData.get("plan"); // "Starter" | "Growth" | "Premium"
 
-  const returnUrl = `${process.env.SHOPIFY_APP_URL}/app/upgrade?confirming=true`;
+  const url = new URL(request.url);
+  const returnUrl = `${url.origin}/app/upgrade?confirming=true`;
 
-  // billing.request throws a redirect to Shopify's billing approval page
-  await billing.request({
-    plan: planName,
-    isTest: process.env.NODE_ENV !== "production",
-    returnUrl,
-  });
+  try {
+    await billing.request({
+      plan: planName,
+      isTest: process.env.SHOPIFY_BILLING_TEST !== "false",
+      returnUrl,
+    });
+  } catch (err) {
+    // billing.request throws a redirect Response on success — re-throw it
+    if (err instanceof Response) throw err;
+    // Surface billing errors to the UI instead of crashing to error boundary
+    const message = err?.errorData?.[0]?.message ?? err?.message ?? "Billing unavailable";
+    return { error: message };
+  }
 };
 
 export default function UpgradePage() {
   const { currentPlan, plans } = useLoaderData();
   const fetcher = useFetcher();
   const loading = fetcher.state !== "idle";
+  const billingError = fetcher.data?.error;
 
   return (
     <s-page heading="Choose your plan">
+      {billingError && (
+        <s-banner tone="critical" title="Billing unavailable">
+          {billingError}
+        </s-banner>
+      )}
       <s-section>
         <div
           style={{

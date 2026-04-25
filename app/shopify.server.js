@@ -21,21 +21,21 @@ if (process.env.NODE_ENV !== "production") {
 function createBillingConfig() {
   return {
     Starter: {
-      amount: 9,
-      currencyCode: "USD",
-      interval: BillingInterval.Every30Days,
+      lineItems: [
+        { amount: 9, currencyCode: "USD", interval: BillingInterval.Every30Days },
+      ],
       trialDays: 30,
     },
     Growth: {
-      amount: 19,
-      currencyCode: "USD",
-      interval: BillingInterval.Every30Days,
+      lineItems: [
+        { amount: 19, currencyCode: "USD", interval: BillingInterval.Every30Days },
+      ],
       trialDays: 30,
     },
     Premium: {
-      amount: 39,
-      currencyCode: "USD",
-      interval: BillingInterval.Every30Days,
+      lineItems: [
+        { amount: 39, currencyCode: "USD", interval: BillingInterval.Every30Days },
+      ],
       trialDays: 30,
     },
   };
