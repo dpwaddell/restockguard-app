@@ -17,7 +17,7 @@ export function PageHeader({ currentTab, plan }) {
       style={{
         backgroundColor: "#fff",
         borderBottom: "1px solid #e1e3e5",
-        padding: "20px 24px",
+        padding: "16px 24px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -44,7 +44,7 @@ export function PageHeader({ currentTab, plan }) {
       </div>
 
       {/* Right: tab navigation */}
-      <nav style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+      <nav style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "#f8f9fa", borderRadius: "8px", padding: "4px" }}>
         {TABS.map((tab) => {
           const isActive = tab.key === currentTab;
           const isUpgrade = tab.key === "upgrade";
@@ -54,14 +54,14 @@ export function PageHeader({ currentTab, plan }) {
               onClick={() => navigate(tab.href)}
               style={{
                 display: "inline-block",
-                padding: "8px 14px",
+                padding: "10px 18px",
                 borderRadius: "6px",
-                fontSize: "13px",
-                fontWeight: isActive ? "600" : "500",
+                fontSize: "14px",
+                fontWeight: isActive ? "700" : "500",
                 border: "none",
                 cursor: "pointer",
                 backgroundColor: isActive
-                  ? "#1a1a1a"
+                  ? "#1a56db"
                   : isUpgrade && plan === "FREE"
                   ? "#1a56db"
                   : "transparent",
