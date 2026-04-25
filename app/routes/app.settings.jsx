@@ -6,6 +6,7 @@ const DEFAULTS = {
   buttonText: "Notify me when back in stock",
   successMessage: "You're on the list! We'll email you when this is back.",
   emailPlaceholder: "Enter your email address",
+  preorderButtonText: "Reserve yours now",
   fromName: "RestockGuard",
   fromEmail: "noreply@restockguard.com",
   showBranding: true,
@@ -45,6 +46,7 @@ export const action = async ({ request }) => {
         buttonText: formData.get("buttonText") || DEFAULTS.buttonText,
         successMessage: formData.get("successMessage") || DEFAULTS.successMessage,
         emailPlaceholder: formData.get("emailPlaceholder") || DEFAULTS.emailPlaceholder,
+        preorderButtonText: formData.get("preorderButtonText") || DEFAULTS.preorderButtonText,
         fromName: formData.get("fromName") || DEFAULTS.fromName,
         fromEmail: formData.get("fromEmail") || DEFAULTS.fromEmail,
         // FREE plan always shows branding
@@ -73,9 +75,10 @@ export default function SettingsPage() {
       <fetcher.Form method="post">
         <s-section heading="Custom messages">
           <s-stack direction="block" gap="base">
-            <Field label="Button text" name="buttonText" defaultValue={settings.buttonText} />
+            <Field label="Notify button text" name="buttonText" defaultValue={settings.buttonText} />
             <Field label="Success message" name="successMessage" defaultValue={settings.successMessage} />
             <Field label="Email placeholder" name="emailPlaceholder" defaultValue={settings.emailPlaceholder} />
+            <Field label="Preorder button text" name="preorderButtonText" defaultValue={settings.preorderButtonText} />
           </s-stack>
         </s-section>
 

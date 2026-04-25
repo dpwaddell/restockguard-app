@@ -26,6 +26,7 @@ export default function App() {
         <s-link href="/app">Home</s-link>
         <s-link href="/app/waitlists">Waitlists</s-link>
         <s-link href="/app/products">Products</s-link>
+        <s-link href="/app/styling">Styling</s-link>
         <s-link href="/app/settings">Settings</s-link>
         <s-link href="/app/upgrade">
           {plan === "FREE" ? "⬆ Upgrade" : `Plan: ${plan}`}

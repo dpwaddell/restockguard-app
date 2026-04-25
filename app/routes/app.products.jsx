@@ -2,6 +2,7 @@ import { useState, Fragment } from "react";
 import { useLoaderData, useFetcher } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
+import { UpgradePrompt } from "../lib/upgrade-prompt";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -12,7 +13,6 @@ export const loader = async ({ request }) => {
 
   if (!shop) return { products: [], plan: "FREE" };
 
-  // Fetch products from Shopify REST API
   let shopifyProducts = [];
   try {
     const res = await fetch(
@@ -27,8 +27,9 @@ export const loader = async ({ request }) => {
 
   const settings = shop.settings ?? {};
   const enabledProducts = settings.enabledProducts ?? [];
+  const preorderProducts = settings.preorderProducts ?? {};
+  const preorderConfigs = settings.preorderConfigs ?? {};
 
-  // Subscriber counts per product
   const [productGroups, variantGroups] = await Promise.all([
     prisma.subscriber.groupBy({
       by: ["productId"],
@@ -45,7 +46,6 @@ export const loader = async ({ request }) => {
   const productCountMap = Object.fromEntries(
     productGroups.map((g) => [g.productId, g._count.productId]),
   );
-  // variantCountMap[productId][variantId] = count
   const variantCountMap = {};
   for (const g of variantGroups) {
     if (!variantCountMap[g.productId]) variantCountMap[g.productId] = {};
@@ -59,6 +59,8 @@ export const loader = async ({ request }) => {
       title: p.title,
       status: p.status,
       enabled: enabledProducts.includes(id),
+      preorder: preorderProducts[id] === true,
+      preorderConfig: preorderConfigs[id] ?? { preorderMessage: "", shipsBy: "" },
       subscriberCount: productCountMap[id] ?? 0,
       variants: (p.variants ?? []).map((v) => ({
         id: String(v.id),
@@ -68,14 +70,13 @@ export const loader = async ({ request }) => {
     };
   });
 
-  return { products, plan: shop.plan };
+  return { products, plan: shop.plan ?? "FREE" };
 };
 
 export const action = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
-  const productId = formData.get("productId");
-  const enable = formData.get("enable") === "true";
+  const intent = formData.get("intent") || "toggle";
 
   const shop = await prisma.shop.findUnique({
     where: { shopDomain: session.shop },
@@ -83,6 +84,30 @@ export const action = async ({ request }) => {
   });
 
   const settings = shop?.settings ?? {};
+
+  if (intent === "preorder") {
+    const productId = formData.get("productId");
+    const enablePreorder = formData.get("enablePreorder") === "true";
+    const preorderMessage = formData.get("preorderMessage") || "";
+    const shipsBy = formData.get("shipsBy") || "";
+
+    const preorderProducts = { ...(settings.preorderProducts ?? {}), [productId]: enablePreorder };
+    const preorderConfigs = {
+      ...(settings.preorderConfigs ?? {}),
+      [productId]: { enabled: enablePreorder, preorderMessage, shipsBy },
+    };
+
+    await prisma.shop.update({
+      where: { shopDomain: session.shop },
+      data: { settings: { ...settings, preorderProducts, preorderConfigs } },
+    });
+
+    return { ok: true };
+  }
+
+  // Default: toggle RestockGuard enable/disable
+  const productId = formData.get("productId");
+  const enable = formData.get("enable") === "true";
   let enabledProducts = settings.enabledProducts ?? [];
 
   if (enable) {
@@ -102,15 +127,45 @@ export const action = async ({ request }) => {
 export default function ProductsPage() {
   const { products, plan } = useLoaderData();
   const fetcher = useFetcher();
+  const preorderFetcher = useFetcher();
   const [expandedId, setExpandedId] = useState(null);
+  const [preorderOn, setPreorderOn] = useState(
+    Object.fromEntries(products.map((p) => [p.id, p.preorder])),
+  );
+  const [preorderConfigs, setPreorderConfigs] = useState(
+    Object.fromEntries(products.map((p) => [p.id, p.preorderConfig])),
+  );
+
+  function handlePreorderToggle(productId) {
+    const newValue = !preorderOn[productId];
+    setPreorderOn((prev) => ({ ...prev, [productId]: newValue }));
+    preorderFetcher.submit(
+      {
+        intent: "preorder",
+        productId,
+        enablePreorder: String(newValue),
+        preorderMessage: preorderConfigs[productId]?.preorderMessage || "",
+        shipsBy: preorderConfigs[productId]?.shipsBy || "",
+      },
+      { method: "post" },
+    );
+  }
 
   return (
     <s-page heading="Products">
+      <UpgradePrompt
+        feature="variant-level demand tracking"
+        requiredPlan="STARTER"
+        currentPlan={plan}
+      />
+
       <s-section>
         {products.length === 0 ? (
           <div style={emptyBox}>
             <s-heading>No products found</s-heading>
-            <s-text tone="subdued">Make sure your Shopify store has products and the app has read_products access.</s-text>
+            <s-text tone="subdued">
+              Make sure your Shopify store has products and the app has read_products access.
+            </s-text>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
@@ -121,6 +176,7 @@ export default function ProductsPage() {
                 <th style={{ ...thStyle, textAlign: "right" }}>Subscribers</th>
                 <th style={thStyle}>Variant demand</th>
                 <th style={{ ...thStyle, textAlign: "center" }}>RestockGuard</th>
+                <th style={{ ...thStyle, textAlign: "center" }}>Preorder</th>
               </tr>
             </thead>
             <tbody>
@@ -151,14 +207,23 @@ export default function ProductsPage() {
                         </a>
                       ) : (
                         <span style={{ fontSize: "13px", color: "#6d7175" }}>
-                          {product.variants.length} variant{product.variants.length !== 1 ? "s" : ""}
+                          {product.variants.length} variant
+                          {product.variants.length !== 1 ? "s" : ""}
                         </span>
                       )}
                     </td>
-                    <td style={{ ...tdStyle, textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+                    <td
+                      style={{ ...tdStyle, textAlign: "center" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <fetcher.Form method="post">
+                        <input type="hidden" name="intent" value="toggle" />
                         <input type="hidden" name="productId" value={product.id} />
-                        <input type="hidden" name="enable" value={product.enabled ? "false" : "true"} />
+                        <input
+                          type="hidden"
+                          name="enable"
+                          value={product.enabled ? "false" : "true"}
+                        />
                         <button
                           type="submit"
                           style={product.enabled ? toggleOnBtn : toggleOffBtn}
@@ -166,26 +231,134 @@ export default function ProductsPage() {
                         >
                           {product.enabled ? "On" : "Off"}
                         </button>
+                        {plan === "FREE" && product.enabled && (
+                          <div style={{ fontSize: "11px", marginTop: "4px" }}>
+                            <a
+                              href="/app/upgrade"
+                              style={{ color: "#008060", textDecoration: "none" }}
+                            >
+                              Variant alerts need Starter
+                            </a>
+                          </div>
+                        )}
                       </fetcher.Form>
                     </td>
+                    <td
+                      style={{ ...tdStyle, textAlign: "center" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        style={preorderOn[product.id] ? toggleOnBtn : toggleOffBtn}
+                        title={
+                          preorderOn[product.id]
+                            ? "Click to disable preorder mode"
+                            : "Click to enable preorder mode"
+                        }
+                        onClick={() => handlePreorderToggle(product.id)}
+                      >
+                        {preorderOn[product.id] ? "On" : "Off"}
+                      </button>
+                    </td>
                   </tr>
+
+                  {/* Preorder config row */}
+                  {preorderOn[product.id] && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        style={{
+                          padding: "10px 12px 12px 40px",
+                          backgroundColor: "#fff8e1",
+                          borderTop: "1px solid #f0e6b2",
+                        }}
+                      >
+                        <preorderFetcher.Form method="post">
+                          <input type="hidden" name="intent" value="preorder" />
+                          <input type="hidden" name="productId" value={product.id} />
+                          <input type="hidden" name="enablePreorder" value="true" />
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "12px",
+                              alignItems: "flex-end",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                              <label style={{ fontSize: "12px", fontWeight: "500", color: "#6d7175" }}>
+                                Preorder message
+                              </label>
+                              <input
+                                type="text"
+                                name="preorderMessage"
+                                defaultValue={preorderConfigs[product.id]?.preorderMessage || ""}
+                                placeholder="Ships next week"
+                                onChange={(e) =>
+                                  setPreorderConfigs((prev) => ({
+                                    ...prev,
+                                    [product.id]: {
+                                      ...prev[product.id],
+                                      preorderMessage: e.target.value,
+                                    },
+                                  }))
+                                }
+                                style={miniInput}
+                              />
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                              <label style={{ fontSize: "12px", fontWeight: "500", color: "#6d7175" }}>
+                                Ships by date
+                              </label>
+                              <input
+                                type="text"
+                                name="shipsBy"
+                                defaultValue={preorderConfigs[product.id]?.shipsBy || ""}
+                                placeholder="January 20"
+                                onChange={(e) =>
+                                  setPreorderConfigs((prev) => ({
+                                    ...prev,
+                                    [product.id]: {
+                                      ...prev[product.id],
+                                      shipsBy: e.target.value,
+                                    },
+                                  }))
+                                }
+                                style={miniInput}
+                              />
+                            </div>
+                            <button type="submit" style={smallBtn}>
+                              Save
+                            </button>
+                          </div>
+                        </preorderFetcher.Form>
+                      </td>
+                    </tr>
+                  )}
 
                   {/* Variant breakdown row */}
                   {expandedId === product.id && plan !== "FREE" && (
                     <tr>
-                      <td colSpan={5} style={{ padding: "0 12px 12px 40px", backgroundColor: "#f9fafb" }}>
+                      <td
+                        colSpan={6}
+                        style={{ padding: "0 12px 12px 40px", backgroundColor: "#f9fafb" }}
+                      >
                         <table style={{ width: "100%", fontSize: "13px" }}>
                           <thead>
                             <tr>
                               <th style={{ ...thStyle, fontWeight: "500" }}>Variant</th>
-                              <th style={{ ...thStyle, textAlign: "right", fontWeight: "500" }}>Subscribers</th>
+                              <th style={{ ...thStyle, textAlign: "right", fontWeight: "500" }}>
+                                Subscribers
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
                             {product.variants.map((v) => (
                               <tr key={v.id} style={{ borderTop: "1px solid #e1e3e5" }}>
                                 <td style={tdStyle}>{v.title}</td>
-                                <td style={{ ...tdStyle, textAlign: "right" }}>{v.subscriberCount}</td>
+                                <td style={{ ...tdStyle, textAlign: "right" }}>
+                                  {v.subscriberCount}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -225,5 +398,22 @@ const toggleBase = {
 };
 const toggleOnBtn = { ...toggleBase, backgroundColor: "#008060", color: "#fff" };
 const toggleOffBtn = { ...toggleBase, backgroundColor: "#f1f2f3", color: "#202223" };
+const miniInput = {
+  padding: "6px 10px",
+  borderRadius: "6px",
+  border: "1px solid #c9cccf",
+  fontSize: "13px",
+  width: "200px",
+};
+const smallBtn = {
+  padding: "6px 14px",
+  borderRadius: "6px",
+  border: "none",
+  backgroundColor: "#008060",
+  color: "#fff",
+  fontSize: "13px",
+  fontWeight: "600",
+  cursor: "pointer",
+};
 
 export const headers = (headersArgs) => boundary.headers(headersArgs);

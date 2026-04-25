@@ -1,25 +1,25 @@
-{% if product.selected_or_first_available_variant.available == false %}
-  <div id="restockguard-container"></div>
+<div id="restockguard-container"></div>
 
-  <script>
-    window.restockguardConfig = {
-      shopDomain: {{ shop.permanent_domain | json }},
-      appUrl: {{ block.settings.app_url | json }},
-      productId: {{ product.id | json }},
-      variantId: {{ product.selected_or_first_available_variant.id | json }},
-      buttonText: {{ block.settings.button_text | json }},
-      successText: {{ block.settings.success_text | json }},
-      styling: {
-        buttonBg: {{ block.settings.button_bg | json }},
-        buttonText: {{ block.settings.button_text_color | json }},
-        borderRadius: {{ block.settings.border_radius | json }},
-        fontSize: "16px"
-      }
-    };
-  </script>
+<script>
+  window.restockguardConfig = {
+    shopDomain: {{ shop.permanent_domain | json }},
+    appUrl: {{ block.settings.app_url | json }},
+    productId: {{ product.id | json }},
+    productHandle: {{ product.handle | json }},
+    variantId: {{ product.selected_or_first_available_variant.id | json }},
+    available: {{ product.selected_or_first_available_variant.available | json }},
+    buttonText: {{ block.settings.button_text | json }},
+    successText: {{ block.settings.success_text | json }},
+    styling: {
+      buttonBg: {{ block.settings.button_bg | json }},
+      buttonText: {{ block.settings.button_text_color | json }},
+      borderRadius: {{ block.settings.border_radius | json }},
+      fontSize: "Medium"
+    }
+  };
+</script>
 
-  <script src="{{ 'restockguard.js' | asset_url }}" defer></script>
-{% endif %}
+<script src="{{ 'restockguard.js' | asset_url }}" defer></script>
 
 {% schema %}
 {

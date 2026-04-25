@@ -1,6 +1,7 @@
 import { Form, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
+import { UpgradePrompt } from "../lib/upgrade-prompt";
 
 const PAGE_SIZE = 50;
 const STATUS_TABS = ["all", "active", "sent", "unsubscribed"];
@@ -12,7 +13,7 @@ export const loader = async ({ request }) => {
     where: { shopDomain: session.shop },
   });
 
-  if (!shop) return { subscribers: [], total: 0, page: 1, q: "", status: "all" };
+  if (!shop) return { subscribers: [], total: 0, page: 1, q: "", status: "all", plan: "FREE" };
 
   const url = new URL(request.url);
   const q = url.searchParams.get("q") || "";
@@ -53,6 +54,7 @@ export const loader = async ({ request }) => {
     q,
     status,
     totalPages: Math.ceil(total / PAGE_SIZE),
+    plan: shop.plan ?? "FREE",
   };
 };
 
@@ -94,10 +96,12 @@ export const action = async ({ request }) => {
 };
 
 export default function WaitlistsPage() {
-  const { subscribers, total, page, q, status, totalPages } = useLoaderData();
+  const { subscribers, total, page, q, status, totalPages, plan } = useLoaderData();
 
   return (
     <s-page heading="Waitlists">
+      <UpgradePrompt feature="CSV export" requiredPlan="STARTER" currentPlan={plan} />
+
       <s-section>
         <s-stack direction="block" gap="base">
           {/* Search + export row */}
@@ -116,9 +120,11 @@ export default function WaitlistsPage() {
                 <button type="submit" style={secondaryBtn}>Search</button>
               </div>
             </Form>
-            <Form method="post">
-              <button type="submit" style={secondaryBtn}>Export CSV</button>
-            </Form>
+            {plan !== "FREE" && (
+              <Form method="post">
+                <button type="submit" style={secondaryBtn}>Export CSV</button>
+              </Form>
+            )}
           </div>
 
           {/* Status tabs */}
