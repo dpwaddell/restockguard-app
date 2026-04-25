@@ -162,10 +162,13 @@ export default function ProductsPage() {
       <s-section>
         {products.length === 0 ? (
           <div style={emptyBox}>
-            <s-heading>No products found</s-heading>
-            <s-text tone="subdued">
+            <div style={{ fontSize: "40px", marginBottom: "8px" }}>📦</div>
+            <div style={{ fontSize: "16px", fontWeight: "600", color: "#202223", marginBottom: "4px" }}>
+              No products found
+            </div>
+            <div style={{ fontSize: "14px", color: "#6d7175", maxWidth: "320px" }}>
               Make sure your Shopify store has products and the app has read_products access.
-            </s-text>
+            </div>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
@@ -188,23 +191,26 @@ export default function ProductsPage() {
                       setExpandedId(expandedId === product.id ? null : product.id)
                     }
                   >
-                    <td style={{ ...tdStyle, fontWeight: "500" }}>
-                      {expandedId === product.id ? "▾ " : "▸ "}
+                    <td style={{ ...tdStyle, fontWeight: "600", fontSize: "15px" }}>
+                      <span style={{ marginRight: "6px", fontSize: "12px", color: "#8c9196" }}>
+                        {expandedId === product.id ? "▾" : "▸"}
+                      </span>
                       {product.title}
                     </td>
                     <td style={tdStyle}>
-                      <s-badge tone={product.status === "active" ? "success" : "warning"}>
-                        {product.status}
-                      </s-badge>
+                      <ProductStatusBadge status={product.status} />
                     </td>
-                    <td style={{ ...tdStyle, textAlign: "right" }}>
+                    <td style={{ ...tdStyle, textAlign: "right", fontWeight: "600" }}>
                       {product.subscriberCount}
                     </td>
                     <td style={tdStyle}>
                       {plan === "FREE" ? (
-                        <a href="/app/upgrade" style={{ fontSize: "12px", color: "#008060" }}>
-                          Upgrade to see variant breakdown
-                        </a>
+                        <span style={{ fontSize: "13px", color: "#6d7175" }}>
+                          🔒{" "}
+                          <a href="/app/upgrade" style={{ color: "#008060", textDecoration: "none", fontWeight: "500" }}>
+                            Starter+
+                          </a>
+                        </span>
                       ) : (
                         <span style={{ fontSize: "13px", color: "#6d7175" }}>
                           {product.variants.length} variant
@@ -224,20 +230,17 @@ export default function ProductsPage() {
                           name="enable"
                           value={product.enabled ? "false" : "true"}
                         />
-                        <button
-                          type="submit"
-                          style={product.enabled ? toggleOnBtn : toggleOffBtn}
+                        <ToggleSwitch
+                          isOn={product.enabled}
                           title={product.enabled ? "Click to disable" : "Click to enable"}
-                        >
-                          {product.enabled ? "On" : "Off"}
-                        </button>
+                        />
                         {plan === "FREE" && product.enabled && (
                           <div style={{ fontSize: "11px", marginTop: "4px" }}>
                             <a
                               href="/app/upgrade"
-                              style={{ color: "#008060", textDecoration: "none" }}
+                              style={{ color: "#6d7175", textDecoration: "none" }}
                             >
-                              Variant alerts need Starter
+                              🔒 Starter+
                             </a>
                           </div>
                         )}
@@ -247,18 +250,16 @@ export default function ProductsPage() {
                       style={{ ...tdStyle, textAlign: "center" }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <button
-                        type="button"
-                        style={preorderOn[product.id] ? toggleOnBtn : toggleOffBtn}
+                      <ToggleSwitch
+                        isOn={preorderOn[product.id]}
                         title={
                           preorderOn[product.id]
                             ? "Click to disable preorder mode"
                             : "Click to enable preorder mode"
                         }
                         onClick={() => handlePreorderToggle(product.id)}
-                      >
-                        {preorderOn[product.id] ? "On" : "Off"}
-                      </button>
+                        asButton
+                      />
                     </td>
                   </tr>
 
@@ -268,25 +269,19 @@ export default function ProductsPage() {
                       <td
                         colSpan={6}
                         style={{
-                          padding: "10px 12px 12px 40px",
-                          backgroundColor: "#fff8e1",
+                          padding: "14px 16px 14px 40px",
+                          backgroundColor: "#fffbf0",
                           borderTop: "1px solid #f0e6b2",
+                          borderBottom: "1px solid #f0e6b2",
                         }}
                       >
                         <preorderFetcher.Form method="post">
                           <input type="hidden" name="intent" value="preorder" />
                           <input type="hidden" name="productId" value={product.id} />
                           <input type="hidden" name="enablePreorder" value="true" />
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "12px",
-                              alignItems: "flex-end",
-                              flexWrap: "wrap",
-                            }}
-                          >
+                          <div style={{ display: "flex", gap: "16px", alignItems: "flex-end", flexWrap: "wrap" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                              <label style={{ fontSize: "12px", fontWeight: "500", color: "#6d7175" }}>
+                              <label style={{ fontSize: "12px", fontWeight: "600", color: "#856404" }}>
                                 Preorder message
                               </label>
                               <input
@@ -307,7 +302,7 @@ export default function ProductsPage() {
                               />
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                              <label style={{ fontSize: "12px", fontWeight: "500", color: "#6d7175" }}>
+                              <label style={{ fontSize: "12px", fontWeight: "600", color: "#856404" }}>
                                 Ships by date
                               </label>
                               <input
@@ -376,37 +371,94 @@ export default function ProductsPage() {
   );
 }
 
+function ToggleSwitch({ isOn, title, onClick, asButton }) {
+  const track = {
+    display: "inline-flex",
+    alignItems: "center",
+    width: "44px",
+    height: "24px",
+    borderRadius: "12px",
+    backgroundColor: isOn ? "#008060" : "#d1d5db",
+    position: "relative",
+    cursor: "pointer",
+    transition: "background-color 0.2s",
+    border: "none",
+    padding: 0,
+    flexShrink: 0,
+  };
+  const thumb = {
+    position: "absolute",
+    left: isOn ? "22px" : "2px",
+    width: "20px",
+    height: "20px",
+    borderRadius: "50%",
+    backgroundColor: "#fff",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+    transition: "left 0.2s",
+  };
+
+  if (asButton) {
+    return (
+      <button type="button" style={track} title={title} onClick={onClick}>
+        <span style={thumb} />
+      </button>
+    );
+  }
+  return (
+    <button type="submit" style={track} title={title}>
+      <span style={thumb} />
+    </button>
+  );
+}
+
+function ProductStatusBadge({ status }) {
+  const styles = {
+    active: { backgroundColor: "#d4edda", color: "#155724", border: "1px solid #c3e6cb" },
+    draft: { backgroundColor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba" },
+    archived: { backgroundColor: "#f1f2f3", color: "#6d7175", border: "1px solid #d1d5db" },
+  };
+  const style = styles[status] ?? styles.draft;
+
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "3px 10px",
+        borderRadius: "12px",
+        fontSize: "12px",
+        fontWeight: "600",
+        textTransform: "capitalize",
+        ...style,
+      }}
+    >
+      {status}
+    </span>
+  );
+}
+
 const thStyle = { textAlign: "left", padding: "10px 12px", fontWeight: "600", fontSize: "13px" };
 const tdStyle = { padding: "10px 12px" };
 const emptyBox = {
-  border: "1px solid #e1e3e5",
+  border: "1px dashed #d1d5db",
   borderRadius: "8px",
-  padding: "40px",
+  padding: "48px 20px",
   textAlign: "center",
   display: "flex",
   flexDirection: "column",
-  gap: "8px",
+  gap: "4px",
   alignItems: "center",
+  backgroundColor: "#fafbfc",
 };
-const toggleBase = {
-  padding: "4px 12px",
-  borderRadius: "20px",
-  border: "none",
-  fontSize: "13px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
-const toggleOnBtn = { ...toggleBase, backgroundColor: "#008060", color: "#fff" };
-const toggleOffBtn = { ...toggleBase, backgroundColor: "#f1f2f3", color: "#202223" };
 const miniInput = {
-  padding: "6px 10px",
+  padding: "7px 10px",
   borderRadius: "6px",
-  border: "1px solid #c9cccf",
+  border: "1px solid #d0c090",
   fontSize: "13px",
   width: "200px",
+  backgroundColor: "#fff",
 };
 const smallBtn = {
-  padding: "6px 14px",
+  padding: "7px 16px",
   borderRadius: "6px",
   border: "none",
   backgroundColor: "#008060",

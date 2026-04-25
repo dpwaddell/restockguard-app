@@ -68,29 +68,50 @@ export default function SettingsPage() {
     <s-page heading="Settings">
       {saved && (
         <s-banner tone="success">
-          <s-paragraph>Settings saved.</s-paragraph>
+          <s-paragraph>Settings saved successfully ✓</s-paragraph>
         </s-banner>
       )}
 
       <fetcher.Form method="post">
-        <s-section heading="Custom messages">
-          <s-stack direction="block" gap="base">
-            <Field label="Notify button text" name="buttonText" defaultValue={settings.buttonText} />
-            <Field label="Success message" name="successMessage" defaultValue={settings.successMessage} />
-            <Field label="Email placeholder" name="emailPlaceholder" defaultValue={settings.emailPlaceholder} />
-            <Field label="Preorder button text" name="preorderButtonText" defaultValue={settings.preorderButtonText} />
-          </s-stack>
+        <s-section heading="💬 Custom messages">
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <Field
+              label="Notify button text"
+              name="buttonText"
+              defaultValue={settings.buttonText}
+            />
+            <Field
+              label="Success message"
+              name="successMessage"
+              defaultValue={settings.successMessage}
+            />
+            <Field
+              label="Email placeholder"
+              name="emailPlaceholder"
+              defaultValue={settings.emailPlaceholder}
+            />
+            <Field
+              label="Preorder button text"
+              name="preorderButtonText"
+              defaultValue={settings.preorderButtonText}
+            />
+          </div>
         </s-section>
 
-        <s-section heading="Email settings">
-          <s-stack direction="block" gap="base">
+        <s-section heading="📧 Email settings">
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <Field label="From name" name="fromName" defaultValue={settings.fromName} />
-            <Field label="From email" name="fromEmail" type="email" defaultValue={settings.fromEmail} />
-          </s-stack>
+            <Field
+              label="From email"
+              name="fromEmail"
+              type="email"
+              defaultValue={settings.fromEmail}
+            />
+          </div>
         </s-section>
 
-        <s-section heading="Widget settings">
-          <s-stack direction="block" gap="base">
+        <s-section heading="🎨 Widget settings">
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <input
                 type="checkbox"
@@ -98,24 +119,57 @@ export default function SettingsPage() {
                 name="showBranding"
                 defaultChecked={settings.showBranding}
                 disabled={plan === "FREE"}
-                style={{ width: "16px", height: "16px", cursor: plan === "FREE" ? "not-allowed" : "pointer" }}
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  cursor: plan === "FREE" ? "not-allowed" : "pointer",
+                  accentColor: "#008060",
+                }}
               />
-              <label htmlFor="showBranding" style={{ fontSize: "14px" }}>
+              <label htmlFor="showBranding" style={{ fontSize: "14px", color: "#202223" }}>
                 Show "Powered by RestockGuard" branding on the widget
               </label>
               {plan === "FREE" && (
-                <s-badge>
-                  <a href="/app/upgrade" style={{ color: "inherit", textDecoration: "none" }}>
-                    Upgrade to remove
+                <span
+                  style={{
+                    display: "inline-block",
+                    padding: "2px 10px",
+                    backgroundColor: "#f1f2f3",
+                    color: "#6d7175",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    border: "1px solid #d1d5db",
+                  }}
+                >
+                  <a href="/app/upgrade" style={{ color: "#008060", textDecoration: "none" }}>
+                    🔒 Upgrade to remove
                   </a>
-                </s-badge>
+                </span>
               )}
             </div>
-          </s-stack>
+          </div>
         </s-section>
 
         <s-section>
-          <button type="submit" disabled={saving} style={primaryBtn}>
+          <button
+            type="submit"
+            disabled={saving}
+            style={{
+              display: "block",
+              width: "100%",
+              maxWidth: "480px",
+              padding: "12px 20px",
+              backgroundColor: saving ? "#6d7175" : "#008060",
+              color: "#fff",
+              border: "none",
+              borderRadius: "6px",
+              fontSize: "15px",
+              fontWeight: "700",
+              cursor: saving ? "wait" : "pointer",
+              transition: "background-color 0.15s",
+            }}
+          >
             {saving ? "Saving…" : "Save settings"}
           </button>
         </s-section>
@@ -126,8 +180,8 @@ export default function SettingsPage() {
 
 function Field({ label, name, type = "text", defaultValue }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-      <label htmlFor={name} style={{ fontSize: "14px", fontWeight: "500" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <label htmlFor={name} style={{ fontSize: "14px", fontWeight: "600", color: "#202223" }}>
         {label}
       </label>
       <input
@@ -142,24 +196,14 @@ function Field({ label, name, type = "text", defaultValue }) {
 }
 
 const inputStyle = {
-  padding: "8px 12px",
+  padding: "9px 12px",
   borderRadius: "6px",
   border: "1px solid #c9cccf",
   fontSize: "14px",
   width: "100%",
   maxWidth: "480px",
   boxSizing: "border-box",
-};
-
-const primaryBtn = {
-  padding: "10px 20px",
-  backgroundColor: "#008060",
-  color: "#fff",
-  border: "none",
-  borderRadius: "6px",
-  fontSize: "14px",
-  fontWeight: "600",
-  cursor: "pointer",
+  color: "#202223",
 };
 
 export const headers = (headersArgs) => boundary.headers(headersArgs);

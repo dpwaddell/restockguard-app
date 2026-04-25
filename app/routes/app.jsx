@@ -17,19 +17,47 @@ export const loader = async ({ request }) => {
   };
 };
 
+const PLAN_PILL = {
+  FREE:     { bg: "#f1f2f3", color: "#6d7175", label: "Free" },
+  STARTER:  { bg: "#e3f1ec", color: "#006640", label: "Starter" },
+  GROWTH:   { bg: "#ddf0e8", color: "#004c3f", label: "Growth" },
+  PREMIUM:  { bg: "#f3e8fd", color: "#6832a8", label: "Premium" },
+};
+
+function PlanBadge({ plan }) {
+  const pill = PLAN_PILL[plan] ?? PLAN_PILL.FREE;
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "2px 8px",
+        borderRadius: "12px",
+        fontSize: "12px",
+        fontWeight: "600",
+        backgroundColor: pill.bg,
+        color: pill.color,
+        lineHeight: "18px",
+        verticalAlign: "middle",
+      }}
+    >
+      {pill.label}
+    </span>
+  );
+}
+
 export default function App() {
   const { apiKey, plan } = useLoaderData();
 
   return (
     <AppProvider embedded apiKey={apiKey}>
       <s-app-nav>
-        <s-link href="/app">Home</s-link>
-        <s-link href="/app/waitlists">Waitlists</s-link>
-        <s-link href="/app/products">Products</s-link>
-        <s-link href="/app/styling">Styling</s-link>
-        <s-link href="/app/settings">Settings</s-link>
+        <s-link href="/app">🏠 Home</s-link>
+        <s-link href="/app/waitlists">📋 Waitlists</s-link>
+        <s-link href="/app/products">📦 Products</s-link>
+        <s-link href="/app/styling">🎨 Styling</s-link>
+        <s-link href="/app/settings">⚙️ Settings</s-link>
         <s-link href="/app/upgrade">
-          {plan === "FREE" ? "⬆ Upgrade" : `Plan: ${plan}`}
+          {plan === "FREE" ? "⬆️ Upgrade" : <PlanBadge plan={plan} />}
         </s-link>
       </s-app-nav>
       <Outlet />

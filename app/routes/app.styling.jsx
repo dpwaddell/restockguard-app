@@ -103,7 +103,7 @@ export default function StylingPage() {
     <s-page heading="Styling">
       {saved && (
         <s-banner tone="success">
-          <s-paragraph>Styling saved.</s-paragraph>
+          <s-paragraph>Styling saved successfully ✓</s-paragraph>
         </s-banner>
       )}
 
@@ -122,14 +122,14 @@ export default function StylingPage() {
         <input type="hidden" name="widgetSize" value={config.widgetSize} />
 
         <s-section>
-          <div style={{ display: "flex", gap: "40px", alignItems: "flex-start" }}>
+          <div style={{ display: "flex", gap: "40px", alignItems: "flex-start", flexWrap: "wrap" }}>
             {/* Controls column */}
-            <div style={{ flex: "0 0 360px" }}>
-              <s-stack direction="block" gap="base">
+            <div style={{ flex: "0 0 360px", minWidth: "280px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 {/* Theme presets */}
                 <div>
                   <div style={sectionLabel}>Theme presets</div>
-                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     {PRESETS.map((preset) => {
                       const locked =
                         preset.requiresPlan &&
@@ -142,24 +142,34 @@ export default function StylingPage() {
                           onClick={() => !locked && applyPreset(preset)}
                           title={locked ? `Requires ${preset.requiresPlan} plan` : ""}
                           style={{
-                            padding: "8px 16px",
-                            borderRadius: "6px",
+                            padding: "10px 14px",
+                            borderRadius: "8px",
                             border: "1px solid",
-                            borderColor: locked ? "#c9cccf" : preset.config.buttonBg,
-                            backgroundColor: locked ? "#f1f2f3" : preset.config.buttonBg,
-                            color: locked ? "#8c9196" : preset.config.buttonText,
-                            fontSize: "13px",
-                            fontWeight: "600",
+                            borderColor: locked ? "#e1e3e5" : preset.config.buttonBg,
+                            backgroundColor: locked ? "#f9fafb" : "#fff",
                             cursor: locked ? "not-allowed" : "pointer",
-                            opacity: locked ? 0.55 : 1,
-                            outline: "1px solid rgba(0,0,0,0.08)",
+                            opacity: locked ? 0.6 : 1,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "6px",
+                            minWidth: "72px",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
                           }}
                         >
-                          {preset.name}
+                          <div
+                            style={{
+                              width: "32px",
+                              height: "18px",
+                              borderRadius: `${preset.config.borderRadius ?? 4}px`,
+                              backgroundColor: locked ? "#d1d5db" : preset.config.buttonBg,
+                            }}
+                          />
+                          <span style={{ fontSize: "12px", fontWeight: "600", color: locked ? "#8c9196" : "#202223" }}>
+                            {preset.name}
+                          </span>
                           {locked && (
-                            <span style={{ fontSize: "11px", marginLeft: "5px", opacity: 0.8 }}>
-                              (Growth+)
-                            </span>
+                            <span style={{ fontSize: "10px", color: "#8c9196" }}>Growth+</span>
                           )}
                         </button>
                       );
@@ -170,7 +180,7 @@ export default function StylingPage() {
                 {/* Custom overrides */}
                 <div style={{ borderTop: "1px solid #e1e3e5", paddingTop: "16px" }}>
                   <div style={sectionLabel}>Custom overrides</div>
-                  <s-stack direction="block" gap="base">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     <ColorField
                       label="Button background"
                       value={config.buttonBg}
@@ -182,12 +192,22 @@ export default function StylingPage() {
                       onChange={(v) => setConfig((p) => ({ ...p, buttonText: v }))}
                     />
                     <SliderField
-                      label={`Border radius: ${config.borderRadius}px`}
+                      label="Border radius"
+                      sublabel={`${config.borderRadius}px`}
                       min={0}
                       max={24}
                       step={2}
                       value={config.borderRadius}
                       onChange={(v) => setConfig((p) => ({ ...p, borderRadius: v }))}
+                      previewStyle={{
+                        width: "48px",
+                        height: "20px",
+                        backgroundColor: config.buttonBg,
+                        borderRadius: `${config.borderRadius}px`,
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginLeft: "8px",
+                      }}
                     />
                     <SelectField
                       label="Font size"
@@ -209,19 +229,19 @@ export default function StylingPage() {
                         { value: "Large", label: "Large" },
                       ]}
                     />
-                  </s-stack>
+                  </div>
                 </div>
 
                 <button type="submit" disabled={saving} style={primaryBtn}>
                   {saving ? "Saving…" : "Save styling"}
                 </button>
-              </s-stack>
+              </div>
             </div>
 
             {/* Preview column */}
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: "280px" }}>
               <div style={sectionLabel}>Live preview</div>
-              <WidgetPreview config={config} />
+              <ProductPagePreview config={config} />
             </div>
           </div>
         </s-section>
@@ -230,7 +250,7 @@ export default function StylingPage() {
   );
 }
 
-function WidgetPreview({ config }) {
+function ProductPagePreview({ config }) {
   const { buttonBg, buttonText, borderRadius, fontSize, widgetSize } = config;
   const fsPx = FONT_SIZE_PX[fontSize] || 14;
   const fs = `${fsPx}px`;
@@ -247,52 +267,107 @@ function WidgetPreview({ config }) {
     <div
       style={{
         border: "1px solid #e1e3e5",
-        borderRadius: "8px",
-        padding: containerPad,
+        borderRadius: "10px",
         backgroundColor: "#fff",
         maxWidth: "420px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        overflow: "hidden",
       }}
     >
-      <p style={{ fontSize: fs, fontWeight: "600", margin: "0 0 10px", color: "#202223" }}>
-        Notify me when back in stock
-      </p>
-      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-        <input
-          type="email"
-          placeholder="Enter your email address"
-          readOnly
+      {/* Product image placeholder */}
+      <div
+        style={{
+          width: "100%",
+          height: "180px",
+          backgroundColor: "#f1f2f3",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ textAlign: "center", color: "#8c9196" }}>
+          <div style={{ fontSize: "32px", marginBottom: "4px" }}>🖼</div>
+          <div style={{ fontSize: "12px" }}>Product image</div>
+        </div>
+      </div>
+
+      {/* Product details */}
+      <div style={{ padding: "16px 20px" }}>
+        <div style={{ fontSize: "18px", fontWeight: "700", color: "#202223", marginBottom: "4px" }}>
+          Sample Product
+        </div>
+        <div style={{ fontSize: "16px", fontWeight: "600", color: "#008060", marginBottom: "16px" }}>
+          $29.99
+        </div>
+
+        {/* Out of stock label */}
+        <div
           style={{
-            flex: 1,
-            minWidth: "160px",
-            padding: inputPad,
-            border: "1px solid #d1d5db",
-            borderRadius: radius,
-            fontSize: fs,
-            outline: "none",
-            color: "#6d7175",
-          }}
-        />
-        <button
-          type="button"
-          style={{
-            background: buttonBg,
-            color: buttonText,
-            border: "none",
-            borderRadius: radius,
-            padding: btnPad,
-            fontSize: fs,
+            display: "inline-block",
+            padding: "3px 10px",
+            backgroundColor: "#fdf0ef",
+            color: "#bf0711",
+            borderRadius: "12px",
+            fontSize: "12px",
             fontWeight: "600",
-            cursor: "default",
-            whiteSpace: "nowrap",
+            marginBottom: "16px",
+            border: "1px solid #f5c0bc",
           }}
         >
-          Notify me
-        </button>
+          Out of stock
+        </div>
+
+        {/* Widget */}
+        <div
+          style={{
+            border: "1px solid #e1e3e5",
+            borderRadius: `${Math.min(borderRadius, 8)}px`,
+            padding: containerPad,
+            backgroundColor: "#fafbfc",
+          }}
+        >
+          <p style={{ fontSize: fs, fontWeight: "600", margin: "0 0 10px", color: "#202223" }}>
+            Notify me when back in stock
+          </p>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              readOnly
+              style={{
+                flex: 1,
+                minWidth: "140px",
+                padding: inputPad,
+                border: "1px solid #d1d5db",
+                borderRadius: radius,
+                fontSize: fs,
+                outline: "none",
+                color: "#6d7175",
+                backgroundColor: "#fff",
+              }}
+            />
+            <button
+              type="button"
+              style={{
+                background: buttonBg,
+                color: buttonText,
+                border: "none",
+                borderRadius: radius,
+                padding: btnPad,
+                fontSize: fs,
+                fontWeight: "600",
+                cursor: "default",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Notify me
+            </button>
+          </div>
+          <p style={{ fontSize: "11px", color: "#8c9196", margin: "8px 0 0" }}>
+            Powered by RestockGuard
+          </p>
+        </div>
       </div>
-      <p style={{ fontSize: "11px", color: "#8c9196", margin: "8px 0 0" }}>
-        Powered by RestockGuard
-      </p>
     </div>
   );
 }
@@ -321,10 +396,14 @@ function ColorField({ label, value, onChange }) {
   );
 }
 
-function SliderField({ label, min, max, step, value, onChange }) {
+function SliderField({ label, sublabel, min, max, step, value, onChange, previewStyle }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <label style={{ fontSize: "14px", fontWeight: "500" }}>{label}</label>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <label style={{ fontSize: "14px", fontWeight: "500" }}>{label}</label>
+        <span style={{ fontSize: "13px", color: "#6d7175" }}>{sublabel}</span>
+        {previewStyle && <span style={previewStyle} />}
+      </div>
       <input
         type="range"
         min={min}
@@ -364,7 +443,7 @@ function SelectField({ label, value, onChange, options }) {
   );
 }
 
-const sectionLabel = { fontSize: "14px", fontWeight: "600", marginBottom: "10px" };
+const sectionLabel = { fontSize: "14px", fontWeight: "600", marginBottom: "12px", color: "#202223" };
 const primaryBtn = {
   padding: "10px 20px",
   backgroundColor: "#008060",
@@ -374,6 +453,7 @@ const primaryBtn = {
   fontSize: "14px",
   fontWeight: "600",
   cursor: "pointer",
+  width: "100%",
 };
 
 export const headers = (headersArgs) => boundary.headers(headersArgs);

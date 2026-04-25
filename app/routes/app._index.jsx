@@ -18,6 +18,7 @@ export const loader = async ({ request }) => {
       topProducts: [],
       recentActivity: [],
       plan: "FREE",
+      shopDomain: session.shop,
     };
   }
 
@@ -95,36 +96,86 @@ export const loader = async ({ request }) => {
     })),
     recentActivity,
     plan: shop.plan,
+    shopDomain: session.shop,
   };
 };
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function storeName(domain) {
+  return domain
+    .replace(/\.myshopify\.com$/, "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function fmt(n) {
+  return typeof n === "number" ? n.toLocaleString() : n;
+}
+
 export default function Index() {
-  const { subscriberCount, alertsSent, conversions, revenue, topProducts, recentActivity, plan } =
+  const { subscriberCount, alertsSent, conversions, revenue, topProducts, recentActivity, plan, shopDomain } =
     useLoaderData();
 
   return (
-    <s-page heading="Dashboard">
+    <s-page heading={`${getGreeting()}, ${storeName(shopDomain)}`}>
       {subscriberCount === 0 && (
         <s-banner tone="info" title="Get started with RestockGuard">
           <s-paragraph>
             Install the RestockGuard widget snippet on your theme, then mark a product as
             sold-out to test the full alert flow end-to-end.
           </s-paragraph>
+          <div style={{ marginTop: "12px" }}>
+            <a
+              href="/app/settings"
+              style={{
+                display: "inline-block",
+                padding: "8px 16px",
+                backgroundColor: "#008060",
+                color: "#fff",
+                borderRadius: "6px",
+                textDecoration: "none",
+                fontSize: "14px",
+                fontWeight: "600",
+              }}
+            >
+              View setup guide →
+            </a>
+          </div>
         </s-banner>
       )}
 
       <s-section heading="Overview">
-        <s-stack direction="inline" gap="base">
-          <KpiCard value={subscriberCount} label="Total Subscribers" />
-          <KpiCard value={alertsSent} label="Alerts Sent (30d)" />
-          <KpiCard value={conversions} label="Conversions (30d)" />
-          <KpiCard value={`£${revenue}`} label="Recovered Revenue" />
-        </s-stack>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: "16px",
+          }}
+        >
+          <KpiCard value={fmt(subscriberCount)} label="Total Subscribers" />
+          <KpiCard value={fmt(alertsSent)} label="Alerts Sent (30d)" />
+          <KpiCard value={fmt(conversions)} label="Conversions (30d)" />
+          <KpiCard value={`£${revenue}`} label="Recovered Revenue (30d)" />
+        </div>
       </s-section>
 
       <s-section heading="Top Requested Products">
         {topProducts.length === 0 ? (
-          <s-text tone="subdued">No subscribers yet — install the widget to start collecting sign-ups.</s-text>
+          <div style={emptyBox}>
+            <div style={{ fontSize: "40px", marginBottom: "8px" }}>📦</div>
+            <div style={{ fontSize: "16px", fontWeight: "600", color: "#202223", marginBottom: "4px" }}>
+              No products yet
+            </div>
+            <div style={{ fontSize: "14px", color: "#6d7175", maxWidth: "320px" }}>
+              Install the RestockGuard widget on your theme to start collecting sign-ups.
+            </div>
+          </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
@@ -140,12 +191,12 @@ export default function Index() {
                   <td style={tdStyle}>
                     <code style={{ fontSize: "12px" }}>…{p.productId.slice(-16)}</code>
                   </td>
-                  <td style={{ ...tdStyle, textAlign: "right" }}>{p.count}</td>
+                  <td style={{ ...tdStyle, textAlign: "right", fontWeight: "600" }}>{p.count}</td>
                   {plan === "FREE" && (
                     <td style={tdStyle}>
-                      <a href="/app/upgrade" style={{ fontSize: "12px", color: "#008060" }}>
-                        Upgrade to see variant breakdown
-                      </a>
+                      <span style={{ fontSize: "12px", color: "#6d7175" }}>
+                        🔒 <a href="/app/upgrade" style={{ color: "#008060", textDecoration: "none" }}>Starter+</a>
+                      </span>
                     </td>
                   )}
                 </tr>
@@ -157,9 +208,17 @@ export default function Index() {
 
       <s-section heading="Recent Activity">
         {recentActivity.length === 0 ? (
-          <s-text tone="subdued">No activity yet.</s-text>
+          <div style={emptyBox}>
+            <div style={{ fontSize: "40px", marginBottom: "8px" }}>📋</div>
+            <div style={{ fontSize: "16px", fontWeight: "600", color: "#202223", marginBottom: "4px" }}>
+              No activity yet
+            </div>
+            <div style={{ fontSize: "14px", color: "#6d7175" }}>
+              Activity will appear here once customers start signing up.
+            </div>
+          </div>
         ) : (
-          <s-stack direction="block" gap="tight">
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             {recentActivity.map((event, i) => (
               <div
                 key={i}
@@ -167,20 +226,34 @@ export default function Index() {
                   display: "flex",
                   alignItems: "center",
                   gap: "12px",
-                  padding: "8px 0",
+                  padding: "10px 14px",
+                  borderLeft: `3px solid ${event.type === "signup" ? "#008060" : "#2c6ecb"}`,
                   borderBottom: "1px solid #f1f2f3",
+                  backgroundColor: "#fff",
+                  borderRadius: "0 4px 4px 0",
                 }}
               >
-                <s-badge tone={event.type === "signup" ? "info" : "success"}>
-                  {event.type === "signup" ? "Signup" : "Alert"}
-                </s-badge>
-                <span style={{ flex: 1, fontSize: "14px" }}>{event.label}</span>
-                <span style={{ fontSize: "12px", color: "#6d7175" }}>
-                  {new Date(event.date).toLocaleDateString("en-GB")}
+                <div
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    backgroundColor: event.type === "signup" ? "#008060" : "#2c6ecb",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ flex: 1, fontSize: "14px", color: "#202223" }}>{event.label}</span>
+                <span style={{ fontSize: "12px", color: "#6d7175", whiteSpace: "nowrap" }}>
+                  {new Date(event.date).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
               </div>
             ))}
-          </s-stack>
+          </div>
         )}
       </s-section>
     </s-page>
@@ -189,16 +262,38 @@ export default function Index() {
 
 function KpiCard({ value, label }) {
   return (
-    <s-box padding="base" borderWidth="base" borderRadius="base" style={{ flex: 1 }}>
-      <s-stack direction="block" gap="tight">
-        <s-heading>{value}</s-heading>
-        <s-text>{label}</s-text>
-      </s-stack>
-    </s-box>
+    <div
+      style={{
+        backgroundColor: "#fff",
+        border: "1px solid #e1e3e5",
+        borderRadius: "8px",
+        padding: "20px 16px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        minWidth: "0",
+      }}
+    >
+      <div style={{ fontSize: "32px", fontWeight: "700", color: "#202223", lineHeight: 1.1 }}>
+        {value}
+      </div>
+      <div style={{ fontSize: "13px", color: "#6d7175", marginTop: "6px", fontWeight: "500" }}>
+        {label}
+      </div>
+    </div>
   );
 }
 
 const thStyle = { textAlign: "left", padding: "10px 12px", fontWeight: "600", fontSize: "13px" };
 const tdStyle = { padding: "10px 12px" };
+const emptyBox = {
+  border: "1px dashed #d1d5db",
+  borderRadius: "8px",
+  padding: "40px 20px",
+  textAlign: "center",
+  display: "flex",
+  flexDirection: "column",
+  gap: "4px",
+  alignItems: "center",
+  backgroundColor: "#fafbfc",
+};
 
 export const headers = (headersArgs) => boundary.headers(headersArgs);

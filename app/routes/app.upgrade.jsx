@@ -76,87 +76,176 @@ export default function UpgradePage() {
           {billingError}
         </s-banner>
       )}
+
+      {/* Trial callout banner */}
+      <div
+        style={{
+          backgroundColor: "#f0fdf4",
+          border: "1px solid #bbf7d0",
+          borderRadius: "8px",
+          padding: "14px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          marginBottom: "4px",
+        }}
+      >
+        <span style={{ fontSize: "20px" }}>🎉</span>
+        <span style={{ fontSize: "14px", fontWeight: "600", color: "#166534" }}>
+          All paid plans include a 30-day free trial — no charge until the trial ends.
+        </span>
+      </div>
+
       <s-section>
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "16px",
+            background: "linear-gradient(180deg, #f9fafb 0%, #ffffff 100%)",
+            borderRadius: "10px",
+            padding: "4px",
           }}
         >
-          {plans.map((plan) => {
-            const isCurrent = currentPlan === plan.key;
-            return (
-              <div
-                key={plan.key}
-                style={{
-                  border: isCurrent ? "2px solid #008060" : "1px solid #e1e3e5",
-                  borderRadius: "8px",
-                  padding: "20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "12px",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "18px", fontWeight: "700" }}>{plan.label}</span>
-                  {isCurrent && (
-                    <s-badge tone="success">Current plan</s-badge>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "16px",
+            }}
+          >
+            {plans.map((plan) => {
+              const isCurrent = currentPlan === plan.key;
+              const isGrowth = plan.key === "GROWTH";
+
+              return (
+                <div key={plan.key} style={{ position: "relative" }}>
+                  {/* "Most popular" badge above Growth */}
+                  {isGrowth && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "-12px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        backgroundColor: "#008060",
+                        color: "#fff",
+                        fontSize: "11px",
+                        fontWeight: "700",
+                        padding: "3px 12px",
+                        borderRadius: "12px",
+                        whiteSpace: "nowrap",
+                        zIndex: 1,
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Most popular
+                    </div>
                   )}
-                </div>
 
-                <div style={{ fontSize: "24px", fontWeight: "700", color: "#202223" }}>
-                  {plan.amount === 0 ? "Free" : `$${plan.amount}`}
-                  {plan.amount > 0 && (
-                    <span style={{ fontSize: "14px", fontWeight: "400", color: "#6d7175" }}>
-                      {" "}/month
-                    </span>
-                  )}
-                </div>
+                  <div
+                    style={{
+                      border: isCurrent
+                        ? "2px solid #008060"
+                        : isGrowth
+                        ? "2px solid #008060"
+                        : "1px solid #e1e3e5",
+                      boxShadow: isCurrent
+                        ? "0 0 0 3px rgba(0,128,96,0.15)"
+                        : isGrowth
+                        ? "0 0 0 2px rgba(0,128,96,0.08)"
+                        : "0 1px 4px rgba(0,0,0,0.06)",
+                      borderRadius: "10px",
+                      padding: "24px 20px 20px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "12px",
+                      backgroundColor: "#fff",
+                      marginTop: isGrowth ? "12px" : "0",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "18px", fontWeight: "700", color: "#202223" }}>
+                        {plan.label}
+                      </span>
+                      {isCurrent && (
+                        <span
+                          style={{
+                            display: "inline-block",
+                            padding: "2px 10px",
+                            backgroundColor: "#d4edda",
+                            color: "#155724",
+                            borderRadius: "12px",
+                            fontSize: "11px",
+                            fontWeight: "700",
+                            border: "1px solid #c3e6cb",
+                          }}
+                        >
+                          Current
+                        </span>
+                      )}
+                    </div>
 
-                <ul style={{ margin: 0, padding: "0 0 0 16px", fontSize: "14px", color: "#202223", lineHeight: "1.8" }}>
-                  {plan.features.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                </ul>
+                    <div style={{ lineHeight: 1 }}>
+                      <span style={{ fontSize: "48px", fontWeight: "800", color: "#202223" }}>
+                        {plan.amount === 0 ? "Free" : `$${plan.amount}`}
+                      </span>
+                      {plan.amount > 0 && (
+                        <span style={{ fontSize: "14px", fontWeight: "400", color: "#6d7175" }}>
+                          {" "}/month
+                        </span>
+                      )}
+                    </div>
 
-                <div style={{ marginTop: "auto", paddingTop: "8px" }}>
-                  {plan.billingName && !isCurrent ? (
-                    <fetcher.Form method="post">
-                      <input type="hidden" name="plan" value={plan.billingName} />
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        style={primaryBtn}
-                      >
-                        {loading ? "Redirecting…" : `Upgrade to ${plan.label}`}
-                      </button>
-                    </fetcher.Form>
-                  ) : isCurrent ? (
-                    <p style={{ margin: 0, fontSize: "14px", color: "#008060", fontWeight: "500" }}>
-                      ✓ You're on this plan
-                    </p>
-                  ) : null}
+                    <ul
+                      style={{
+                        margin: 0,
+                        padding: "0 0 0 16px",
+                        fontSize: "14px",
+                        color: "#202223",
+                        lineHeight: "1.9",
+                      }}
+                    >
+                      {plan.features.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ul>
+
+                    <div style={{ marginTop: "auto", paddingTop: "8px" }}>
+                      {plan.billingName && !isCurrent ? (
+                        <fetcher.Form method="post">
+                          <input type="hidden" name="plan" value={plan.billingName} />
+                          <button
+                            type="submit"
+                            disabled={loading}
+                            style={{
+                              width: "100%",
+                              padding: "11px 16px",
+                              backgroundColor: "#008060",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "6px",
+                              fontSize: "14px",
+                              fontWeight: "600",
+                              cursor: loading ? "wait" : "pointer",
+                            }}
+                          >
+                            {loading ? "Redirecting…" : `Upgrade to ${plan.label}`}
+                          </button>
+                        </fetcher.Form>
+                      ) : isCurrent ? (
+                        <p style={{ margin: 0, fontSize: "14px", color: "#008060", fontWeight: "600" }}>
+                          ✓ You're on this plan
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </s-section>
     </s-page>
   );
 }
-
-const primaryBtn = {
-  width: "100%",
-  padding: "10px 16px",
-  backgroundColor: "#008060",
-  color: "#fff",
-  border: "none",
-  borderRadius: "6px",
-  fontSize: "14px",
-  fontWeight: "600",
-  cursor: "pointer",
-};
 
 export const headers = (headersArgs) => boundary.headers(headersArgs);

@@ -103,20 +103,35 @@ export default function WaitlistsPage() {
       <UpgradePrompt feature="CSV export" requiredPlan="STARTER" currentPlan={plan} />
 
       <s-section>
-        <s-stack direction="block" gap="base">
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {/* Search + export row */}
           <div style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
             <Form method="get" style={{ flex: 1 }}>
               <input type="hidden" name="status" value={status} />
               <input type="hidden" name="page" value="1" />
-              <div style={{ display: "flex", gap: "8px" }}>
-                <input
-                  type="text"
-                  name="q"
-                  defaultValue={q}
-                  placeholder="Search by email…"
-                  style={inputStyle}
-                />
+              <div style={{ position: "relative", display: "flex", gap: "8px" }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: "12px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      fontSize: "15px",
+                      pointerEvents: "none",
+                      color: "#8c9196",
+                    }}
+                  >
+                    🔍
+                  </span>
+                  <input
+                    type="text"
+                    name="q"
+                    defaultValue={q}
+                    placeholder="Search by email…"
+                    style={{ ...inputStyle, paddingLeft: "36px" }}
+                  />
+                </div>
                 <button type="submit" style={secondaryBtn}>Search</button>
               </div>
             </Form>
@@ -127,14 +142,14 @@ export default function WaitlistsPage() {
             )}
           </div>
 
-          {/* Status tabs */}
-          <div style={{ display: "flex", gap: "8px" }}>
+          {/* Status pill tabs */}
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {STATUS_TABS.map((tab) => (
               <a
                 key={tab}
                 href={`/app/waitlists?status=${tab}&q=${encodeURIComponent(q)}&page=1`}
                 style={{
-                  padding: "6px 14px",
+                  padding: "6px 16px",
                   borderRadius: "20px",
                   backgroundColor: status === tab ? "#008060" : "#f1f2f3",
                   color: status === tab ? "#fff" : "#202223",
@@ -142,6 +157,8 @@ export default function WaitlistsPage() {
                   fontSize: "13px",
                   fontWeight: status === tab ? "600" : "400",
                   textTransform: "capitalize",
+                  border: status === tab ? "1px solid #008060" : "1px solid #d1d5db",
+                  transition: "all 0.15s",
                 }}
               >
                 {tab}
@@ -149,16 +166,35 @@ export default function WaitlistsPage() {
             ))}
           </div>
 
-          {/* Total */}
-          <s-text tone="subdued">{total} subscriber{total !== 1 ? "s" : ""}</s-text>
+          {/* Total count */}
+          <div style={{ fontSize: "13px", color: "#6d7175" }}>
+            {total} subscriber{total !== 1 ? "s" : ""}
+          </div>
 
           {/* Table / empty state */}
           {subscribers.length === 0 ? (
             <div style={emptyBox}>
-              <s-heading>No subscribers yet</s-heading>
-              <s-text tone="subdued">
+              <div style={{ fontSize: "40px", marginBottom: "8px" }}>📧</div>
+              <div style={{ fontSize: "16px", fontWeight: "600", color: "#202223", marginBottom: "4px" }}>
+                No subscribers yet
+              </div>
+              <div style={{ fontSize: "14px", color: "#6d7175", marginBottom: "16px", maxWidth: "320px" }}>
                 Install the RestockGuard widget on your store theme to start collecting sign-ups.
-              </s-text>
+              </div>
+              <a
+                href="/app/settings"
+                style={{
+                  padding: "8px 20px",
+                  backgroundColor: "#008060",
+                  color: "#fff",
+                  borderRadius: "6px",
+                  textDecoration: "none",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                }}
+              >
+                Go to Settings
+              </a>
             </div>
           ) : (
             <>
@@ -173,17 +209,27 @@ export default function WaitlistsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {subscribers.map((sub) => (
-                    <tr key={sub.id} style={{ borderTop: "1px solid #e1e3e5" }}>
-                      <td style={tdStyle}>{sub.email}</td>
-                      <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "12px" }}>
+                  {subscribers.map((sub, idx) => (
+                    <tr
+                      key={sub.id}
+                      style={{
+                        borderTop: "1px solid #e1e3e5",
+                        backgroundColor: idx % 2 === 1 ? "#fafbfc" : "#fff",
+                      }}
+                    >
+                      <td style={{ ...tdStyle, fontWeight: "500" }}>{sub.email}</td>
+                      <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "12px", color: "#6d7175" }}>
                         {sub.productId}
                       </td>
-                      <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "12px" }}>
+                      <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "12px", color: "#6d7175" }}>
                         {sub.variantId ?? "—"}
                       </td>
-                      <td style={tdStyle}>
-                        {new Date(sub.createdAt).toLocaleDateString("en-GB")}
+                      <td style={{ ...tdStyle, color: "#6d7175" }}>
+                        {new Date(sub.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
                       </td>
                       <td style={tdStyle}>
                         <StatusBadge status={sub.status} />
@@ -195,43 +241,79 @@ export default function WaitlistsPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  {page > 1 && (
-                    <a href={`/app/waitlists?status=${status}&q=${encodeURIComponent(q)}&page=${page - 1}`} style={pageLink}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    paddingTop: "8px",
+                  }}
+                >
+                  {page > 1 ? (
+                    <a
+                      href={`/app/waitlists?status=${status}&q=${encodeURIComponent(q)}&page=${page - 1}`}
+                      style={pageBtn}
+                    >
                       ← Previous
                     </a>
+                  ) : (
+                    <span style={pageBtnDisabled}>← Previous</span>
                   )}
-                  <s-text>Page {page} of {totalPages}</s-text>
-                  {page < totalPages && (
-                    <a href={`/app/waitlists?status=${status}&q=${encodeURIComponent(q)}&page=${page + 1}`} style={pageLink}>
+                  <span style={{ fontSize: "13px", color: "#6d7175" }}>
+                    Page {page} of {totalPages}
+                  </span>
+                  {page < totalPages ? (
+                    <a
+                      href={`/app/waitlists?status=${status}&q=${encodeURIComponent(q)}&page=${page + 1}`}
+                      style={pageBtn}
+                    >
                       Next →
                     </a>
+                  ) : (
+                    <span style={pageBtnDisabled}>Next →</span>
                   )}
                 </div>
               )}
             </>
           )}
-        </s-stack>
+        </div>
       </s-section>
     </s-page>
   );
 }
 
 function StatusBadge({ status }) {
-  const tones = { ACTIVE: "success", SENT: "info", UNSUBSCRIBED: "critical", PENDING: "warning" };
+  const styles = {
+    ACTIVE: { backgroundColor: "#d4edda", color: "#155724", border: "1px solid #c3e6cb" },
+    SENT: { backgroundColor: "#cce5ff", color: "#004085", border: "1px solid #b8daff" },
+    UNSUBSCRIBED: { backgroundColor: "#f1f2f3", color: "#6d7175", border: "1px solid #d1d5db" },
+    PENDING: { backgroundColor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba" },
+  };
+  const style = styles[status] ?? styles.PENDING;
+
   return (
-    <s-badge tone={tones[status] ?? "info"}>
+    <span
+      style={{
+        display: "inline-block",
+        padding: "3px 10px",
+        borderRadius: "12px",
+        fontSize: "12px",
+        fontWeight: "600",
+        ...style,
+      }}
+    >
       {status.charAt(0) + status.slice(1).toLowerCase()}
-    </s-badge>
+    </span>
   );
 }
 
 const inputStyle = {
-  flex: 1,
+  width: "100%",
   padding: "8px 12px",
   borderRadius: "6px",
   border: "1px solid #c9cccf",
   fontSize: "14px",
+  boxSizing: "border-box",
 };
 const secondaryBtn = {
   padding: "8px 16px",
@@ -241,26 +323,46 @@ const secondaryBtn = {
   fontSize: "14px",
   cursor: "pointer",
   whiteSpace: "nowrap",
+  fontWeight: "500",
 };
-const thStyle = { textAlign: "left", padding: "10px 12px", fontWeight: "600", fontSize: "13px" };
+const thStyle = {
+  textAlign: "left",
+  padding: "10px 12px",
+  fontWeight: "600",
+  fontSize: "13px",
+  color: "#202223",
+};
 const tdStyle = { padding: "10px 12px" };
-const pageLink = {
-  padding: "6px 14px",
+const pageBtn = {
+  padding: "7px 14px",
   border: "1px solid #c9cccf",
   borderRadius: "6px",
   textDecoration: "none",
   color: "#202223",
   fontSize: "14px",
+  fontWeight: "500",
+  backgroundColor: "#fff",
+};
+const pageBtnDisabled = {
+  padding: "7px 14px",
+  border: "1px solid #e1e3e5",
+  borderRadius: "6px",
+  color: "#b5b8bc",
+  fontSize: "14px",
+  fontWeight: "500",
+  backgroundColor: "#fafbfc",
+  cursor: "default",
 };
 const emptyBox = {
-  border: "1px solid #e1e3e5",
+  border: "1px dashed #d1d5db",
   borderRadius: "8px",
-  padding: "40px",
+  padding: "48px 20px",
   textAlign: "center",
   display: "flex",
   flexDirection: "column",
-  gap: "8px",
+  gap: "4px",
   alignItems: "center",
+  backgroundColor: "#fafbfc",
 };
 
 export const headers = (headersArgs) => boundary.headers(headersArgs);
