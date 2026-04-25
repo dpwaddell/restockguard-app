@@ -6,7 +6,7 @@ application_url = "https://restockguard.sample-guard.com"
 embedded = true
 
 [build]
-automatically_update_urls_on_dev = false
+automatically_update_urls_on_dev = true
 include_config_on_deploy = true
 
 [webhooks]

@@ -3,4 +3,4 @@ roles = ["frontend", "backend"]
 webhooks_path = "/webhooks/app/uninstalled"
 [commands]
 predev = "npm exec prisma generate"
-dev = "sh scripts/migrate-dev.sh && npx react-router dev --port 3458 --host 0.0.0.0"
+dev = "echo 'App served by Docker on port 4002' && sleep infinity"
