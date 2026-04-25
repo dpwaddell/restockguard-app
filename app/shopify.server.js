@@ -2,6 +2,7 @@ import "@shopify/shopify-app-react-router/adapters/node";
 import {
   ApiVersion,
   AppDistribution,
+  BillingInterval,
   DeliveryMethod,
   shopifyApp,
 } from "@shopify/shopify-app-react-router/server";
@@ -17,6 +18,29 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
+function createBillingConfig() {
+  return {
+    Starter: {
+      amount: 9,
+      currencyCode: "USD",
+      interval: BillingInterval.Every30Days,
+      trialDays: 30,
+    },
+    Growth: {
+      amount: 19,
+      currencyCode: "USD",
+      interval: BillingInterval.Every30Days,
+      trialDays: 30,
+    },
+    Premium: {
+      amount: 39,
+      currencyCode: "USD",
+      interval: BillingInterval.Every30Days,
+      trialDays: 30,
+    },
+  };
+}
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
@@ -26,6 +50,7 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
+  billing: createBillingConfig(),
   future: {
     expiringOfflineAccessTokens: true,
   },
