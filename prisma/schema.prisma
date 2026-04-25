@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+
+  @@map("sessions")
+}
+
+enum Plan {
+  FREE
+  STARTER
+  GROWTH
+  PREMIUM
+}
+
+enum SubscriberStatus {
+  PENDING
+  ACTIVE
+  SENT
+  UNSUBSCRIBED
+}
+
+enum PreorderMode {
+  EMAIL
+  CHECKOUT
+}
+
+model Shop {
+  id              String    @id @default(uuid())
+  shopDomain      String    @unique
+  accessToken     String
+  plan            Plan      @default(FREE)
+  billingId       String?
+  settings        Json      @default("{}")
+  installedAt     DateTime  @default(now())
+  uninstalledAt   DateTime?
+
+  subscribers     Subscriber[]
+  alertSends      AlertSend[]
+  conversions     Conversion[]
+  preorderConfigs PreorderConfig[]
+  analyticsDaily  AnalyticsDaily[]
+
+  @@map("shops")
+}
+
+model Subscriber {
+  id          String           @id @default(uuid())
+  shopId      String
+  email       String
+  productId   String
+  variantId   String?
+  status      SubscriberStatus @default(ACTIVE)
+  source      String?
+  createdAt   DateTime         @default(now())
+
+  shop        Shop         @relation(fields: [shopId], references: [id])
+  alertSends  AlertSend[]
+  conversions Conversion[]
+
+  @@unique([email, shopId, productId, variantId])
+  @@index([shopId, variantId])
+  @@index([shopId, productId])
+  @@map("subscribers")
+}
+
+model AlertSend {
+  id           String    @id @default(uuid())
+  shopId       String
+  subscriberId String
+  productId    String
+  variantId    String?
+  emailId      String
+  sentAt       DateTime  @default(now())
+  openedAt     DateTime?
+  clickedAt    DateTime?
+
+  shop        Shop        @relation(fields: [shopId], references: [id])
+  subscriber  Subscriber  @relation(fields: [subscriberId], references: [id])
+  conversions Conversion[]
+
+  @@index([shopId, sentAt])
+  @@map("alert_sends")
+}
+
+model Conversion {
+  id           String   @id @default(uuid())
+  shopId       String
+  subscriberId String?
+  alertSendId  String?
+  orderId      String
+  orderValue   Decimal
+  convertedAt  DateTime @default(now())
+
+  shop       Shop        @relation(fields: [shopId], references: [id])
+  subscriber Subscriber? @relation(fields: [subscriberId], references: [id])
+  alertSend  AlertSend?  @relation(fields: [alertSendId], references: [id])
+
+  @@index([shopId, convertedAt])
+  @@map("conversions")
+}
+
+model PreorderConfig {
+  id          String       @id @default(uuid())
+  shopId      String
+  productId   String
+  variantId   String?
+  enabled     Boolean
+  message     String
+  shipsByDate DateTime?
+  mode        PreorderMode
+
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@unique([shopId, productId, variantId])
+  @@map("preorder_configs")
+}
+
+model AnalyticsDaily {
+  id          String   @id @default(uuid())
+  shopId      String
+  date        DateTime @db.Date
+  newSignups  Int      @default(0)
+  alertsSent  Int      @default(0)
+  opens       Int      @default(0)
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  revenue     Decimal  @default(0)
+
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@unique([shopId, date])
+  @@map("analytics_daily")
+}
