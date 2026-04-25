@@ -55,6 +55,7 @@ model Shop {
   plan            Plan      @default(FREE)
   billingId       String?
   settings        Json      @default("{}")
+  isActive        Boolean   @default(true)
   installedAt     DateTime  @default(now())
   uninstalledAt   DateTime?
 
