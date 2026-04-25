@@ -266,16 +266,16 @@ function KpiCard({ value, label }) {
       style={{
         backgroundColor: "#fff",
         border: "1px solid #e1e3e5",
-        borderRadius: "8px",
-        padding: "20px 16px",
+        borderRadius: "10px",
+        padding: "20px 24px",
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
         minWidth: "0",
       }}
     >
-      <div style={{ fontSize: "32px", fontWeight: "700", color: "#202223", lineHeight: 1.1 }}>
+      <div style={{ fontSize: "40px", fontWeight: "700", color: "#202223", lineHeight: 1.1 }}>
         {value}
       </div>
-      <div style={{ fontSize: "13px", color: "#6d7175", marginTop: "6px", fontWeight: "500" }}>
+      <div style={{ fontSize: "14px", color: "#6d7175", marginTop: "6px", fontWeight: "500" }}>
         {label}
       </div>
     </div>

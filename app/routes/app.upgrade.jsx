@@ -102,13 +102,15 @@ export default function UpgradePage() {
             background: "linear-gradient(180deg, #f9fafb 0%, #ffffff 100%)",
             borderRadius: "10px",
             padding: "4px",
+            overflowX: "auto",
           }}
         >
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gridTemplateColumns: "repeat(4, 1fr)",
               gap: "16px",
+              minWidth: "760px",
             }}
           >
             {plans.map((plan) => {
