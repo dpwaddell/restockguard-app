@@ -26,24 +26,13 @@ export function PageHeader({ currentTab, plan }) {
     >
       {/* Left: icon + name + tagline */}
       <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-        <div
-          style={{
-            width: "48px",
-            height: "48px",
-            borderRadius: "10px",
-            backgroundColor: "#008060",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontSize: "18px",
-            fontWeight: "800",
-            flexShrink: 0,
-            letterSpacing: "-0.5px",
-          }}
-        >
-          RG
-        </div>
+        <img
+          src="/logo.png"
+          width="48"
+          height="48"
+          style={{ borderRadius: "8px", objectFit: "cover", flexShrink: 0 }}
+          alt="RestockGuard"
+        />
         <div>
           <div style={{ fontSize: "22px", fontWeight: "700", color: "#202223", lineHeight: 1.2 }}>
             RestockGuard
