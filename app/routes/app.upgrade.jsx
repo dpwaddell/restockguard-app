@@ -2,6 +2,7 @@ import { redirect, useLoaderData, useFetcher } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
 import { PLANS } from "../lib/billing.server";
+import { PageHeader } from "../components/PageHeader";
 
 export const loader = async ({ request }) => {
   const { session, billing } = await authenticate.admin(request);
@@ -71,6 +72,7 @@ export default function UpgradePage() {
 
   return (
     <s-page heading="Choose your plan">
+      <PageHeader currentTab="upgrade" plan={currentPlan} />
       {billingError && (
         <s-banner tone="critical" title="Billing unavailable">
           {billingError}

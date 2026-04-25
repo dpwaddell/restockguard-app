@@ -2,6 +2,7 @@ import { Form, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
 import { UpgradePrompt } from "../lib/upgrade-prompt";
+import { PageHeader } from "../components/PageHeader";
 
 const PAGE_SIZE = 50;
 const STATUS_TABS = ["all", "active", "sent", "unsubscribed"];
@@ -100,6 +101,7 @@ export default function WaitlistsPage() {
 
   return (
     <s-page heading="Waitlists">
+      <PageHeader currentTab="waitlists" plan={plan} />
       <UpgradePrompt feature="CSV export" requiredPlan="STARTER" currentPlan={plan} />
 
       <s-section>

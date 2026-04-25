@@ -1,6 +1,7 @@
 import { useLoaderData, useFetcher } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
+import { PageHeader } from "../components/PageHeader";
 
 const DEFAULTS = {
   buttonText: "Notify me when back in stock",
@@ -66,6 +67,7 @@ export default function SettingsPage() {
 
   return (
     <s-page heading="Settings">
+      <PageHeader currentTab="settings" plan={plan} />
       {saved && (
         <s-banner tone="success">
           <s-paragraph>Settings saved successfully ✓</s-paragraph>

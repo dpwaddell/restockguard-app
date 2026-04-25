@@ -3,6 +3,7 @@ import { useLoaderData, useFetcher } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
 import { UpgradePrompt } from "../lib/upgrade-prompt";
+import { PageHeader } from "../components/PageHeader";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -153,6 +154,7 @@ export default function ProductsPage() {
 
   return (
     <s-page heading="Products">
+      <PageHeader currentTab="products" plan={plan} />
       <UpgradePrompt
         feature="variant-level demand tracking"
         requiredPlan="STARTER"

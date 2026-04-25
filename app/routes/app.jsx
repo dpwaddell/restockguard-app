@@ -45,38 +45,11 @@ function PlanBadge({ plan }) {
   );
 }
 
-function AppHeader({ plan }) {
-  return (
-    <div
-      style={{
-        backgroundColor: "#fff",
-        borderBottom: "1px solid #e1e3e5",
-        borderLeft: "3px solid #008060",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-        padding: "14px 28px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <span style={{ fontSize: "24px", color: "#008060", lineHeight: 1 }}>🛡️</span>
-        <span style={{ fontSize: "20px", fontWeight: "800", color: "#202223" }}>RestockGuard</span>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <PlanBadge plan={plan} />
-        <span style={{ fontSize: "12px", color: "#6d7175" }}>v1.0</span>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   const { apiKey, plan } = useLoaderData();
 
   return (
     <AppProvider embedded apiKey={apiKey}>
-      <AppHeader plan={plan} />
       <s-app-nav>
         <s-link href="/app">🏠 Home</s-link>
         <s-link href="/app/waitlists">📋 Waitlists</s-link>

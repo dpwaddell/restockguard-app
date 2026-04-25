@@ -3,6 +3,7 @@ import { useLoaderData, useFetcher } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
 import { UpgradePrompt } from "../lib/upgrade-prompt";
+import { PageHeader } from "../components/PageHeader";
 
 const PLAN_HIERARCHY = ["FREE", "STARTER", "GROWTH", "PREMIUM"];
 
@@ -101,6 +102,7 @@ export default function StylingPage() {
 
   return (
     <s-page heading="Styling">
+      <PageHeader currentTab="styling" plan={plan} />
       {saved && (
         <s-banner tone="success">
           <s-paragraph>Styling saved successfully ✓</s-paragraph>

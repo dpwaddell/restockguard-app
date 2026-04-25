@@ -1,6 +1,7 @@
 import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
+import { PageHeader } from "../components/PageHeader";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -125,6 +126,7 @@ export default function Index() {
 
   return (
     <s-page heading={`${getGreeting()}, ${storeName(shopDomain)}`}>
+      <PageHeader currentTab="home" plan={plan} />
       {subscriberCount === 0 && (
         <s-banner tone="info" title="Get started with RestockGuard">
           <s-paragraph>
