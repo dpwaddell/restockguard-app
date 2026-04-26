@@ -98,24 +98,14 @@ export default function UpgradePage() {
         </span>
       </div>
 
-      <s-section style={{ overflowX: "auto" }}>
+      <s-section>
         <div
           style={{
-            background: "linear-gradient(180deg, #f9fafb 0%, #ffffff 100%)",
-            borderRadius: "10px",
-            padding: "4px",
-            maxWidth: "960px",
-            margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "16px",
           }}
         >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "16px",
-              minWidth: "860px",
-            }}
-          >
             {plans.map((plan) => {
               const isCurrent = currentPlan === plan.key;
               const isGrowth = plan.key === "GROWTH";
@@ -161,8 +151,7 @@ export default function UpgradePage() {
                       borderRadius: "10px",
                       padding: "20px 16px 16px",
                       display: "flex",
-                      minWidth: "200px",
-                      maxWidth: "220px",
+                      flex: 1,
                       flexDirection: "column",
                       gap: "12px",
                       backgroundColor: "#fff",
@@ -249,7 +238,6 @@ export default function UpgradePage() {
                 </div>
               );
             })}
-          </div>
         </div>
       </s-section>
     </s-page>
