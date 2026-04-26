@@ -24,19 +24,19 @@ function createBillingConfig() {
       lineItems: [
         { amount: 9, currencyCode: "USD", interval: BillingInterval.Every30Days },
       ],
-      trialDays: 30,
+      trialDays: 14,
     },
     Growth: {
       lineItems: [
         { amount: 19, currencyCode: "USD", interval: BillingInterval.Every30Days },
       ],
-      trialDays: 30,
+      trialDays: 14,
     },
     Premium: {
       lineItems: [
         { amount: 39, currencyCode: "USD", interval: BillingInterval.Every30Days },
       ],
-      trialDays: 30,
+      trialDays: 14,
     },
   };
 }

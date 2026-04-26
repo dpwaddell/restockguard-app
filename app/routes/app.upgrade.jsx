@@ -94,17 +94,18 @@ export default function UpgradePage() {
       >
         <span style={{ fontSize: "20px" }}>🎉</span>
         <span style={{ fontSize: "14px", fontWeight: "600", color: "#166534" }}>
-          All paid plans include a 30-day free trial — no charge until the trial ends.
+          All paid plans include a 14-day free trial — no charge until the trial ends.
         </span>
       </div>
 
-      <s-section>
+      <s-section style={{ overflowX: "auto" }}>
         <div
           style={{
             background: "linear-gradient(180deg, #f9fafb 0%, #ffffff 100%)",
             borderRadius: "10px",
             padding: "4px",
-            overflowX: "auto",
+            maxWidth: "1100px",
+            margin: "0 auto",
           }}
         >
           <div
@@ -160,7 +161,8 @@ export default function UpgradePage() {
                       borderRadius: "10px",
                       padding: "24px 24px 20px",
                       display: "flex",
-                      minWidth: "180px",
+                      minWidth: "200px",
+                      maxWidth: "280px",
                       flexDirection: "column",
                       gap: "12px",
                       backgroundColor: "#fff",

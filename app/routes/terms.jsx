@@ -44,7 +44,7 @@ export default function TermsOfService() {
         <Section title="3. Billing and Subscription">
           <p><strong>Free Plan:</strong> RestockGuard offers a free tier with limited features at no charge.</p>
           <p><strong>Paid Plans:</strong> Starter, Growth, and Premium plans are billed as monthly recurring subscriptions through Shopify's billing system.</p>
-          <p><strong>Free Trial:</strong> All paid plans include a 30-day free trial period. You will not be charged until the trial period ends. You may cancel at any time during the trial without incurring any charge.</p>
+          <p><strong>Free Trial:</strong> All paid plans include a 14-day free trial period. You will not be charged until the trial period ends. You may cancel at any time during the trial without incurring any charge.</p>
           <p><strong>Billing cycle:</strong> Charges are processed monthly through your Shopify account. Shopify's standard billing policies apply. We do not directly handle payment card information.</p>
           <p><strong>Upgrades and downgrades:</strong> You may change your plan at any time. Upgrades take effect immediately; downgrades take effect at the start of the next billing cycle.</p>
           <p><strong>Cancellation:</strong> You may cancel your subscription at any time by uninstalling RestockGuard from your Shopify admin or by downgrading to the Free plan. Cancellation stops future charges; no refunds are issued for unused portions of a billing period, except where required by applicable law.</p>

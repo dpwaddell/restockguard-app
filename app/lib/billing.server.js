@@ -25,7 +25,7 @@ export const PLANS = {
       "Custom button text & messages",
       "Remove RestockGuard branding",
       "CSV export",
-      "30-day free trial",
+      "14-day free trial",
     ],
   },
   GROWTH: {
@@ -40,7 +40,7 @@ export const PLANS = {
       "Top products report",
       "Email open & click tracking",
       "Priority email support",
-      "30-day free trial",
+      "14-day free trial",
     ],
   },
   PREMIUM: {
@@ -54,7 +54,7 @@ export const PLANS = {
       "Custom from-email domain",
       "Advanced analytics",
       "Dedicated account manager",
-      "30-day free trial",
+      "14-day free trial",
     ],
   },
 };

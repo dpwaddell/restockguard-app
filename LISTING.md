@@ -96,7 +96,7 @@ back in stock, restock alerts, out of stock, waitlist, email alerts, inventory n
 - [ ] GDPR webhooks registered and responding (customers/data_request, customers/redact, shop/redact)
 - [ ] App proxy configured (if using storefront widget route)
 - [ ] Billing tested in test mode — all 3 paid plans purchasable and cancellable
-- [ ] Free trial period confirmed (30 days)
+- [ ] Free trial period confirmed (14 days)
 - [ ] Uninstall webhook fires and marks shop inactive
 - [ ] Widget snippet documented in setup guide
 - [ ] Support email responding
