@@ -81,7 +81,7 @@ export default function App() {
         <s-link href="/app/styling">🎨 Styling</s-link>
         <s-link href="/app/settings">⚙️ Settings</s-link>
         <s-link href="/app/upgrade">
-          {plan === "FREE" ? "⬆️ Upgrade" : <PlanBadge plan={plan} />}
+          {plan === "FREE" ? "⬆️ Upgrade" : plan === "STARTER" ? "Starter Plan" : plan === "GROWTH" ? "Growth Plan" : "Premium Plan"}
         </s-link>
       </s-app-nav>
       <Outlet />
