@@ -42,12 +42,12 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
-  const { billing } = await authenticate.admin(request);
+  const { session, billing } = await authenticate.admin(request);
   const formData = await request.formData();
   const planName = formData.get("plan"); // "Starter" | "Growth" | "Premium"
 
-  const url = new URL(request.url);
-  const returnUrl = `${url.origin}/app/upgrade?confirming=true`;
+  const shopName = session.shop.replace(".myshopify.com", "");
+  const returnUrl = `https://admin.shopify.com/store/${shopName}/apps/restockguard-1/app`;
 
   try {
     await billing.request({
