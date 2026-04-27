@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useLoaderData, useFetcher, useNavigate } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate, prisma } from "../shopify.server";
@@ -103,7 +103,7 @@ export const action = async ({ request }) => {
       data: { settings: { ...settings, preorderProducts, preorderConfigs } },
     });
 
-    return { ok: true };
+    return { ok: true, productId };
   }
 
   // Default: toggle RestockGuard enable/disable
@@ -138,7 +138,16 @@ export default function ProductsPage() {
   );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [savedProductId, setSavedProductId] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (preorderFetcher.state === "idle" && preorderFetcher.data?.ok && preorderFetcher.data?.productId) {
+      setSavedProductId(preorderFetcher.data.productId);
+      const t = setTimeout(() => setSavedProductId(null), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [preorderFetcher.state, preorderFetcher.data]);
 
   function handlePreorderToggle(productId) {
     const newValue = !preorderOn[productId];
@@ -380,9 +389,18 @@ export default function ProductsPage() {
                                 style={miniInput}
                               />
                             </div>
-                            <button type="submit" style={smallBtn}>
-                              Save
+                            <button
+                              type="submit"
+                              style={{ ...smallBtn, opacity: preorderFetcher.state !== "idle" ? 0.6 : 1 }}
+                              disabled={preorderFetcher.state !== "idle"}
+                            >
+                              {preorderFetcher.state !== "idle" ? "Saving…" : "Save"}
                             </button>
+                            {savedProductId === product.id && (
+                              <span style={{ fontSize: "13px", color: "#2e7d32", fontWeight: "600" }}>
+                                Saved ✓
+                              </span>
+                            )}
                           </div>
                         </preorderFetcher.Form>
                       </td>
