@@ -77,13 +77,40 @@ const shopify = shopifyApp({
     },
   },
   hooks: {
-    afterAuth: async ({ session }) => {
+    afterAuth: async ({ session, admin }) => {
       shopify.registerWebhooks({ session });
       await prisma.shop.upsert({
         where: { shopDomain: session.shop },
         update: { accessToken: session.accessToken, uninstalledAt: null },
         create: { shopDomain: session.shop, accessToken: session.accessToken },
       });
+
+      // Sync billing plan — handles the post-billing-approval redirect that triggers re-auth
+      try {
+        const response = await admin.graphql(
+          `#graphql
+          query {
+            currentAppInstallation {
+              activeSubscriptions { name id status }
+            }
+          }`
+        );
+        const data = await response.json();
+        const subs = data?.data?.currentAppInstallation?.activeSubscriptions ?? [];
+        const activeSub = subs.find((s) => s.status === "ACTIVE");
+        if (activeSub) {
+          const nameToKey = { Starter: "STARTER", Growth: "GROWTH", Premium: "PREMIUM" };
+          const newPlan = nameToKey[activeSub.name];
+          if (newPlan) {
+            await prisma.shop.update({
+              where: { shopDomain: session.shop },
+              data: { plan: newPlan },
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("[afterAuth] billing sync failed:", e?.message);
+      }
     },
   },
   ...(process.env.SHOP_CUSTOM_DOMAIN

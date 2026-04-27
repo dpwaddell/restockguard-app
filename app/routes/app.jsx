@@ -4,16 +4,40 @@ import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate, prisma } from "../shopify.server";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  const { session, billing } = await authenticate.admin(request);
 
   const shop = await prisma.shop.findUnique({
     where: { shopDomain: session.shop },
     select: { plan: true },
   });
+  let plan = shop?.plan ?? "FREE";
+
+  try {
+    const { hasActivePayment, appSubscriptions } = await billing.check({
+      plans: ["Starter", "Growth", "Premium"],
+      isTest: process.env.SHOPIFY_BILLING_TEST !== "false",
+    });
+
+    const nameToKey = { Starter: "STARTER", Growth: "GROWTH", Premium: "PREMIUM" };
+    const billingPlan =
+      hasActivePayment && appSubscriptions?.length > 0
+        ? (nameToKey[appSubscriptions[0].name] ?? "FREE")
+        : "FREE";
+
+    if (billingPlan !== plan) {
+      await prisma.shop.update({
+        where: { shopDomain: session.shop },
+        data: { plan: billingPlan },
+      });
+      plan = billingPlan;
+    }
+  } catch {
+    // Fall through with DB plan on billing check error
+  }
 
   return {
     apiKey: process.env.SHOPIFY_API_KEY || "",
-    plan: shop?.plan ?? "FREE",
+    plan,
   };
 };
 

@@ -21,7 +21,7 @@ export const PLANS = {
     billingName: "Starter",
     features: [
       "Up to 1,000 subscribers",
-      "Variant-level tracking",
+      "Variant-level demand tracking",
       "Custom button text & messages",
       "Remove RestockGuard branding",
       "CSV export",
@@ -36,9 +36,6 @@ export const PLANS = {
     features: [
       "Up to 5,000 subscribers",
       "Everything in Starter",
-      "Full analytics dashboard",
-      "Top products report",
-      "Email open & click tracking",
       "Priority email support",
       "14-day free trial",
     ],
@@ -51,9 +48,7 @@ export const PLANS = {
     features: [
       "Unlimited subscribers",
       "Everything in Growth",
-      "Custom from-email domain",
-      "Advanced analytics",
-      "Dedicated account manager",
+      "Custom from-email domain (coming soon)",
       "14-day free trial",
     ],
   },
