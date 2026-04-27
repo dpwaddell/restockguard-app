@@ -9,6 +9,12 @@ const TABS = [
   { key: "upgrade",   label: "Upgrade",    href: "/app/upgrade" },
 ];
 
+const PLAN_BADGE = {
+  STARTER: { backgroundColor: "#e8eefb", color: "#1a56db", label: "Starter" },
+  GROWTH:  { backgroundColor: "#e8eefb", color: "#1a56db", label: "Growth" },
+  PREMIUM: { backgroundColor: "#ede9fe", color: "#6d28d9", label: "Premium" },
+};
+
 export function PageHeader({ currentTab, plan }) {
   const navigate = useNavigate();
 
@@ -43,43 +49,58 @@ export function PageHeader({ currentTab, plan }) {
         </div>
       </div>
 
-      {/* Right: tab navigation */}
-      <nav style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "#f8f9fa", borderRadius: "8px", padding: "4px" }}>
-        {TABS.map((tab) => {
-          const isActive = tab.key === currentTab;
-          const isUpgrade = tab.key === "upgrade";
-          return (
-            <button
-              key={tab.key}
-              onClick={() => navigate(tab.href)}
-              style={{
-                display: "inline-block",
-                padding: "10px 18px",
-                borderRadius: "6px",
-                fontSize: "14px",
-                fontWeight: isActive ? "700" : "500",
-                border: "none",
-                cursor: "pointer",
-                backgroundColor: isActive
-                  ? "#1a56db"
-                  : isUpgrade && plan === "FREE"
-                  ? "#1a56db"
-                  : "transparent",
-                color: isActive
-                  ? "#fff"
-                  : isUpgrade && plan === "FREE"
-                  ? "#fff"
-                  : "#6d7175",
-                transition: "background-color 0.15s, color 0.15s",
-              }}
-            >
-              {isUpgrade && plan !== "FREE"
-                ? `Plan: ${plan.charAt(0) + plan.slice(1).toLowerCase()}`
-                : tab.label}
-            </button>
-          );
-        })}
-      </nav>
+      {/* Right: tab navigation + plan badge */}
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <nav style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "#f8f9fa", borderRadius: "8px", padding: "4px" }}>
+          {TABS.map((tab) => {
+            const isActive = tab.key === currentTab;
+            const isUpgrade = tab.key === "upgrade";
+            return (
+              <button
+                key={tab.key}
+                onClick={() => navigate(tab.href)}
+                style={{
+                  display: "inline-block",
+                  padding: "10px 18px",
+                  borderRadius: "6px",
+                  fontSize: "14px",
+                  fontWeight: isActive ? "700" : "500",
+                  border: "none",
+                  cursor: "pointer",
+                  backgroundColor: isActive
+                    ? "#1a56db"
+                    : isUpgrade && plan === "FREE"
+                    ? "#1a56db"
+                    : "transparent",
+                  color: isActive
+                    ? "#fff"
+                    : isUpgrade && plan === "FREE"
+                    ? "#fff"
+                    : "#6d7175",
+                  transition: "background-color 0.15s, color 0.15s",
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+        {PLAN_BADGE[plan] && (
+          <span
+            style={{
+              backgroundColor: PLAN_BADGE[plan].backgroundColor,
+              color: PLAN_BADGE[plan].color,
+              fontSize: "12px",
+              fontWeight: 600,
+              padding: "3px 10px",
+              borderRadius: "12px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {PLAN_BADGE[plan].label}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
