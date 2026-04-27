@@ -3,7 +3,7 @@
 <script>
   window.restockguardConfig = {
     shopDomain: {{ shop.permanent_domain | json }},
-    appUrl: "https://restockguard.sample-guard.com",
+    appUrl: {{ block.settings.app_url | default: "https://restockguard.sample-guard.com" | json }},
     productId: {{ product.id | json }},
     productHandle: {{ product.handle | json }},
     variantId: {{ product.selected_or_first_available_variant.id | json }},
@@ -26,6 +26,13 @@
   "name": "RestockGuard",
   "target": "section",
   "settings": [
+    {
+      "type": "text",
+      "id": "app_url",
+      "label": "App URL",
+      "default": "https://restockguard.sample-guard.com",
+      "info": "Do not change this value"
+    },
     {
       "type": "text",
       "id": "button_text",
