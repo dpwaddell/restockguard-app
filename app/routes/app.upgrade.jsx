@@ -64,11 +64,14 @@ export const action = async ({ request }) => {
   }
 };
 
+const PLAN_ORDER = ["FREE", "STARTER", "GROWTH", "PREMIUM"];
+
 export default function UpgradePage() {
   const { currentPlan, plans } = useLoaderData();
   const fetcher = useFetcher();
   const loading = fetcher.state !== "idle";
   const billingError = fetcher.data?.error;
+  const currentPlanIndex = PLAN_ORDER.indexOf(currentPlan);
 
   return (
     <s-page heading="Choose your plan">
@@ -109,6 +112,9 @@ export default function UpgradePage() {
             {plans.map((plan) => {
               const isCurrent = currentPlan === plan.key;
               const isGrowth = plan.key === "GROWTH";
+              const planIndex = PLAN_ORDER.indexOf(plan.key);
+              const isUpgrade = planIndex > currentPlanIndex;
+              const isDowngrade = planIndex < currentPlanIndex && planIndex !== 0;
 
               return (
                 <div key={plan.key} style={{ position: "relative" }}>
@@ -207,7 +213,11 @@ export default function UpgradePage() {
                     </ul>
 
                     <div style={{ marginTop: "auto", paddingTop: "8px" }}>
-                      {plan.billingName && !isCurrent ? (
+                      {isCurrent ? (
+                        <p style={{ margin: 0, fontSize: "14px", color: "#1a56db", fontWeight: "600" }}>
+                          ✓ You're on this plan
+                        </p>
+                      ) : isUpgrade && plan.billingName ? (
                         <fetcher.Form method="post">
                           <input type="hidden" name="plan" value={plan.billingName} />
                           <button
@@ -228,10 +238,27 @@ export default function UpgradePage() {
                             {loading ? "Redirecting…" : `Upgrade to ${plan.label}`}
                           </button>
                         </fetcher.Form>
-                      ) : isCurrent ? (
-                        <p style={{ margin: 0, fontSize: "14px", color: "#1a56db", fontWeight: "600" }}>
-                          ✓ You're on this plan
-                        </p>
+                      ) : isDowngrade && plan.billingName ? (
+                        <fetcher.Form method="post">
+                          <input type="hidden" name="plan" value={plan.billingName} />
+                          <button
+                            type="submit"
+                            disabled={loading}
+                            style={{
+                              width: "100%",
+                              padding: "11px 16px",
+                              backgroundColor: "#f1f2f3",
+                              color: "#6d7175",
+                              border: "none",
+                              borderRadius: "6px",
+                              fontSize: "14px",
+                              fontWeight: "600",
+                              cursor: loading ? "wait" : "pointer",
+                            }}
+                          >
+                            {loading ? "Redirecting…" : `Downgrade to ${plan.label}`}
+                          </button>
+                        </fetcher.Form>
                       ) : null}
                     </div>
                   </div>
