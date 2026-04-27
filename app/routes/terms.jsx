@@ -151,7 +151,7 @@ export default function TermsOfService() {
             If you have questions about these Terms, please contact us:
           </p>
           <ul style={ul}>
-            <li>Email: <a href="mailto:support@restockguard.com" style={link}>support@restockguard.com</a></li>
+            <li>Email: <a href="mailto:support@sample-guard.com" style={link}>support@sample-guard.com</a></li>
           </ul>
         </Section>
 

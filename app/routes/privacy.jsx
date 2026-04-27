@@ -65,13 +65,13 @@ export default function PrivacyPolicy() {
           <ul style={ul}>
             <li>You can delete all subscriber data for a specific product from the RestockGuard dashboard (Products page)</li>
             <li>Uninstalling the app from your Shopify admin triggers our app/uninstalled webhook and marks your shop inactive</li>
-            <li>You may request full data deletion by emailing <a href="mailto:support@restockguard.com" style={link}>support@restockguard.com</a></li>
+            <li>You may request full data deletion by emailing <a href="mailto:support@sample-guard.com" style={link}>support@sample-guard.com</a></li>
           </ul>
           <p><strong>For your customers (end users):</strong></p>
           <ul style={ul}>
             <li>Customers can unsubscribe at any time via the unsubscribe link included in every alert email</li>
             <li>Shopify's GDPR webhooks (customers/redact) trigger automatic deletion of a customer's subscriber records upon their request</li>
-            <li>Customers may request access to or deletion of their data by contacting you (the merchant), who can relay the request to us at <a href="mailto:support@restockguard.com" style={link}>support@restockguard.com</a></li>
+            <li>Customers may request access to or deletion of their data by contacting you (the merchant), who can relay the request to us at <a href="mailto:support@sample-guard.com" style={link}>support@sample-guard.com</a></li>
           </ul>
         </Section>
 
@@ -117,7 +117,7 @@ export default function PrivacyPolicy() {
             please contact us:
           </p>
           <ul style={ul}>
-            <li>Email: <a href="mailto:support@restockguard.com" style={link}>support@restockguard.com</a></li>
+            <li>Email: <a href="mailto:support@sample-guard.com" style={link}>support@sample-guard.com</a></li>
             <li>Website: <a href="/privacy" style={link}>restockguard.com/privacy</a></li>
           </ul>
         </Section>

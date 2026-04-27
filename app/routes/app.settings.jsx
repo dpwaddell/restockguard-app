@@ -9,7 +9,7 @@ const DEFAULTS = {
   emailPlaceholder: "Enter your email address",
   preorderButtonText: "Reserve yours now",
   fromName: "RestockGuard",
-  fromEmail: "noreply@restockguard.com",
+  fromEmail: "noreply@sample-guard.com",
   showBranding: true,
 };
 
