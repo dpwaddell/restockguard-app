@@ -55,6 +55,7 @@ export const loader = async ({ request }) => {
 
   const products = shopifyProducts.map((p) => {
     const id = String(p.id);
+    const firstVariant = p.variants?.[0];
     return {
       id,
       title: p.title,
@@ -63,6 +64,7 @@ export const loader = async ({ request }) => {
       preorder: preorderProducts[id] === true,
       preorderConfig: preorderConfigs[id] ?? { preorderMessage: "", shipsBy: "" },
       subscriberCount: productCountMap[id] ?? 0,
+      inventory: firstVariant?.inventory_quantity ?? null,
       variants: (p.variants ?? []).map((v) => ({
         id: String(v.id),
         title: v.title,
@@ -139,7 +141,23 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [savedProductId, setSavedProductId] = useState(null);
+  const [sortCol, setSortCol] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
   const navigate = useNavigate();
+
+  function handleSort(col) {
+    if (sortCol === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortCol(col);
+      setSortDir("asc");
+    }
+  }
+
+  function sortArrow(col) {
+    if (sortCol !== col) return null;
+    return sortDir === "asc" ? " ↑" : " ↓";
+  }
 
   useEffect(() => {
     if (preorderFetcher.state === "idle" && preorderFetcher.data?.ok && preorderFetcher.data?.productId) {
@@ -167,6 +185,19 @@ export default function ProductsPage() {
   const visibleProducts = products
     .filter((p) => statusFilter === "all" || p.status === statusFilter)
     .filter((p) => p.title.toLowerCase().includes(search.toLowerCase()));
+
+  const sortedProducts = sortCol
+    ? [...visibleProducts].sort((a, b) => {
+        let av, bv;
+        if (sortCol === "title") { av = a.title.toLowerCase(); bv = b.title.toLowerCase(); }
+        else if (sortCol === "status") { av = a.status; bv = b.status; }
+        else if (sortCol === "subscribers") { av = a.subscriberCount; bv = b.subscriberCount; }
+        else if (sortCol === "inventory") { av = a.inventory ?? -1; bv = b.inventory ?? -1; }
+        if (av < bv) return sortDir === "asc" ? -1 : 1;
+        if (av > bv) return sortDir === "asc" ? 1 : -1;
+        return 0;
+      })
+    : visibleProducts;
 
   return (
     <s-page heading="Products">
@@ -241,16 +272,25 @@ export default function ProductsPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
               <tr style={{ backgroundColor: "#f6f6f7" }}>
-                <th style={thStyle}>Product</th>
-                <th style={thStyle}>Status</th>
-                <th style={{ ...thStyle, textAlign: "right" }}>Subscribers</th>
+                <th style={{ ...thStyle, cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("title")}>
+                  Product{sortArrow("title")}
+                </th>
+                <th style={{ ...thStyle, cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("status")}>
+                  Status{sortArrow("status")}
+                </th>
+                <th style={{ ...thStyle, textAlign: "right", cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("subscribers")}>
+                  Subscribers{sortArrow("subscribers")}
+                </th>
+                <th style={{ ...thStyle, textAlign: "right", cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("inventory")}>
+                  Inventory{sortArrow("inventory")}
+                </th>
                 <th style={thStyle}>Variant demand</th>
                 <th style={{ ...thStyle, textAlign: "center" }}>RestockGuard</th>
                 <th style={{ ...thStyle, textAlign: "center" }}>Preorder</th>
               </tr>
             </thead>
             <tbody>
-              {visibleProducts.map((product) => (
+              {sortedProducts.map((product) => (
                 <Fragment key={product.id}>
                   <tr
                     style={{ borderTop: "1px solid #e1e3e5", cursor: "pointer" }}
@@ -269,6 +309,15 @@ export default function ProductsPage() {
                     </td>
                     <td style={{ ...tdStyle, textAlign: "right", fontWeight: "600" }}>
                       {product.subscriberCount}
+                    </td>
+                    <td style={{ ...tdStyle, textAlign: "right" }}>
+                      {product.inventory === null ? (
+                        <span style={{ color: "#8c9196" }}>—</span>
+                      ) : product.inventory === 0 ? (
+                        <span style={{ color: "#d82c0d", fontWeight: "600" }}>Out of stock</span>
+                      ) : (
+                        product.inventory
+                      )}
                     </td>
                     <td style={tdStyle}>
                       {plan === "FREE" ? (
@@ -334,7 +383,7 @@ export default function ProductsPage() {
                   {preorderOn[product.id] && (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         style={{
                           padding: "14px 16px 14px 40px",
                           backgroundColor: "#fffbf0",
@@ -411,7 +460,7 @@ export default function ProductsPage() {
                   {expandedId === product.id && plan !== "FREE" && (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         style={{ padding: "0 12px 12px 40px", backgroundColor: "#f9fafb" }}
                       >
                         <table style={{ width: "100%", fontSize: "13px" }}>
