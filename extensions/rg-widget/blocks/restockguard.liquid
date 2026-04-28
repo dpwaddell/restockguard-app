@@ -1,0 +1,65 @@
+<div id="restockguard-container"></div>
+
+<script>
+  window.restockguardConfig = {
+    shopDomain: {{ shop.permanent_domain | json }},
+    appUrl: "https://restockguard.sample-guard.com",
+    productId: {{ product.id | json }},
+    productHandle: {{ product.handle | json }},
+    variantId: {{ product.selected_or_first_available_variant.id | json }},
+    available: {{ product.selected_or_first_available_variant.available | json }},
+    buttonText: {{ block.settings.button_text | json }},
+    successText: {{ block.settings.success_text | json }},
+    styling: {
+      buttonBg: {{ block.settings.button_bg | json }},
+      buttonText: {{ block.settings.button_text_color | json }},
+      borderRadius: {{ block.settings.border_radius | json }},
+      fontSize: "Medium"
+    }
+  };
+</script>
+
+<script src="{{ 'restockguard.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "RestockGuard",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Notify Button Text",
+      "default": "Notify me when back in stock"
+    },
+    {
+      "type": "text",
+      "id": "success_text",
+      "label": "Success Message",
+      "default": "Thanks! We'll email you when it's back."
+    },
+    {
+      "type": "color",
+      "id": "button_bg",
+      "label": "Button Background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border Radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "default": 6,
+      "unit": "px"
+    }
+  ]
+}
+{% endschema %}

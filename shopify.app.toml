@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "2f6ed5a94831b68a67fdc7a3247558a3"
+client_id = "0c4f7a335db20092a8351028ab5b5156"
 name = "RestockGuard"
 application_url = "https://restockguard.sample-guard.com"
 embedded = true

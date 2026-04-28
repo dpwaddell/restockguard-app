@@ -1,0 +1,7 @@
+api_version = "2026-07"
+uid = "b1ac1eba-9a1f-4512-9234-c24ec5919422"
+
+[[extensions]]
+type = "theme"
+name = "RestockGuard Widget"
+handle = "rg-widget"
