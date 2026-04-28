@@ -1,7 +1,7 @@
 api_version = "2026-07"
-uid = "fd0a800a-a1c7-b0b0-3235-f91750925d6fe5dd97ab"
+uid = "019dbfb2-646a-7451-bb31-5fa705ef32f5"
 
 [[extensions]]
 type = "theme"
 name = "RestockGuard Widget"
-handle = "restockguard-widget"
+handle = "restockguard"
