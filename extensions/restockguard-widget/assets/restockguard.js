@@ -115,6 +115,7 @@
   // Fetch fresh availability for a given variantId
   // -------------------------------------------------------------------------
   function fetchAvailability(variantId, cb) {
+    if (!cfg.productHandle) { cb(false); return; }
     fetch('/products/' + cfg.productHandle + '.js')
       .then(function (r) { return r.json(); })
       .then(function (product) {
@@ -254,14 +255,9 @@
         // Preorder widget is always visible regardless of stock status
         setVisible(true);
       } else {
+        // cfg.available is passed from Liquid and is authoritative for initial load
         var initialOos = cfg.available === false || cfg.available === 'false';
-        if (initialOos) {
-          setVisible(true);
-        } else if (currentVariantId) {
-          fetchAvailability(currentVariantId, function (oos) {
-            setVisible(oos);
-          });
-        }
+        setVisible(initialOos);
       }
     });
   }
