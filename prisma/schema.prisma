@@ -51,6 +51,7 @@ enum PreorderMode {
 model Shop {
   id              String    @id @default(uuid())
   shopDomain      String    @unique
+  shopName        String?
   accessToken     String
   plan            Plan      @default(FREE)
   billingId       String?

@@ -133,9 +133,11 @@ const sendWorker = new Worker(
     const token = generateUnsubscribeToken(subscriber.id);
     const unsubscribeUrl = `${process.env.SHOPIFY_APP_URL}/api/unsubscribe?token=${encodeURIComponent(token)}`;
 
+    const displayName = shop.settings?.emailFromName || shop.shopName || shopDomain;
+
     const emailHtml = await render(
       React.createElement(BackInStock, {
-        shopName: shop.settings?.emailFromName || shopDomain,
+        shopName: displayName,
         productTitle: product.title,
         productImageUrl: product.imageUrl,
         productUrl: `https://${shopDomain}/products/${product.handle}`,
@@ -144,7 +146,7 @@ const sendWorker = new Worker(
       })
     );
 
-    const fromName = shop.settings?.emailFromName || shopDomain;
+    const fromName = displayName;
     const fromAddress = shop.settings?.fromEmail || process.env.EMAIL_FROM_ADDRESS;
 
     const { data, error } = await resend.emails.send(

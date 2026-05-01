@@ -79,10 +79,20 @@ const shopify = shopifyApp({
   hooks: {
     afterAuth: async ({ session, admin }) => {
       shopify.registerWebhooks({ session });
+
+      let shopName;
+      try {
+        const shopInfoRes = await admin.graphql(`{ shop { name } }`);
+        const shopInfoJson = await shopInfoRes.json();
+        shopName = shopInfoJson?.data?.shop?.name || undefined;
+      } catch {
+        // Non-fatal — shopName stays undefined and falls back at send time
+      }
+
       await prisma.shop.upsert({
         where: { shopDomain: session.shop },
-        update: { accessToken: session.accessToken, uninstalledAt: null },
-        create: { shopDomain: session.shop, accessToken: session.accessToken },
+        update: { accessToken: session.accessToken, uninstalledAt: null, ...(shopName ? { shopName } : {}) },
+        create: { shopDomain: session.shop, accessToken: session.accessToken, ...(shopName ? { shopName } : {}) },
       });
 
       // Sync billing plan — handles the post-billing-approval redirect that triggers re-auth
