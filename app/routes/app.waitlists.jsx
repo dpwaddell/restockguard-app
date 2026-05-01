@@ -82,6 +82,7 @@ export const loader = async ({ request }) => {
     status,
     totalPages: Math.ceil(total / PAGE_SIZE),
     plan: shop.plan ?? "FREE",
+    shopDomain: session.shop,
   };
 };
 
@@ -127,7 +128,7 @@ export const action = async ({ request }) => {
 };
 
 export default function WaitlistsPage() {
-  const { subscribers, total, page, q, status, totalPages, plan, productTitleMap } = useLoaderData();
+  const { subscribers, total, page, q, status, totalPages, plan, productTitleMap, shopDomain } = useLoaderData();
   const navigate = useNavigate();
 
   return (
@@ -267,9 +268,18 @@ export default function WaitlistsPage() {
                     >
                       <td style={{ ...tdStyle, fontWeight: "500" }}>{sub.email}</td>
                       <td style={tdStyle}>
-                        {productTitleMap[sub.productId]
-                          ? productTitleMap[sub.productId]
-                          : <code style={{ fontSize: "12px", color: "#6d7175" }}>{sub.productId}</code>}
+                        <a
+                          href={
+                            sub.variantId
+                              ? `https://${shopDomain}/admin/products/${sub.productId}/variants/${sub.variantId}`
+                              : `https://${shopDomain}/admin/products/${sub.productId}`
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ color: "#1a56db", textDecoration: "none", fontWeight: "500" }}
+                        >
+                          {productTitleMap[sub.productId] ?? <code style={{ fontSize: "12px" }}>{sub.productId}</code>}
+                        </a>
                       </td>
                       <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "12px", color: "#6d7175" }}>
                         {sub.variantId ?? "—"}

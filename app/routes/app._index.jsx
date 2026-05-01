@@ -80,6 +80,30 @@ export const loader = async ({ request }) => {
     ? Number(conversionsResult._sum.orderValue).toFixed(2)
     : "0.00";
 
+  const productNameMap = {};
+  const topProductIds = topProductsRaw.map((p) => p.productId);
+  if (topProductIds.length > 0) {
+    try {
+      const gids = topProductIds.map((id) => `gid://shopify/Product/${id}`);
+      const response = await admin.graphql(
+        `query GetProductTitles($ids: [ID!]!) {
+          nodes(ids: $ids) {
+            ... on Product { id title }
+          }
+        }`,
+        { variables: { ids: gids } }
+      );
+      const json = await response.json();
+      for (const node of json?.data?.nodes ?? []) {
+        if (node?.id && node?.title) {
+          productNameMap[node.id.split("/").pop()] = node.title;
+        }
+      }
+    } catch {
+      // Non-fatal — fall back to raw IDs
+    }
+  }
+
   const recentActivity = [
     ...recentSignups.map((s) => ({
       type: "signup",
@@ -104,6 +128,7 @@ export const loader = async ({ request }) => {
     revenue,
     topProducts: topProductsRaw.map((p) => ({
       productId: p.productId,
+      productName: productNameMap[p.productId] ?? null,
       count: p._count.productId,
     })),
     recentActivity,
@@ -254,7 +279,7 @@ export default function Index() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
               <tr style={{ backgroundColor: "#f6f6f7" }}>
-                <th style={thStyle}>Product ID</th>
+                <th style={thStyle}>Product</th>
                 <th style={{ ...thStyle, textAlign: "right" }}>Subscribers</th>
                 {plan === "FREE" && <th style={thStyle}></th>}
               </tr>
@@ -263,7 +288,14 @@ export default function Index() {
               {topProducts.map((p) => (
                 <tr key={p.productId} style={{ borderTop: "1px solid #e1e3e5" }}>
                   <td style={tdStyle}>
-                    <code style={{ fontSize: "12px" }}>…{p.productId.slice(-16)}</code>
+                    <a
+                      href={`https://${shopDomain}/admin/products/${p.productId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "#1a56db", textDecoration: "none", fontWeight: "500" }}
+                    >
+                      {p.productName ?? `…${p.productId.slice(-16)}`}
+                    </a>
                   </td>
                   <td style={{ ...tdStyle, textAlign: "right", fontWeight: "600" }}>{p.count}</td>
                   {plan === "FREE" && (
