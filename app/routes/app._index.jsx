@@ -4,7 +4,7 @@ import { authenticate, prisma } from "../shopify.server";
 import { PageHeader } from "../components/PageHeader";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
   const shop = await prisma.shop.findUnique({
     where: { shopDomain: session.shop },
@@ -20,12 +20,14 @@ export const loader = async ({ request }) => {
       recentActivity: [],
       plan: "FREE",
       shopDomain: session.shop,
+      currencyCode: "GBP",
     };
   }
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
   const [
+    shopInfoResponse,
     subscriberCount,
     alertsSent,
     conversionsResult,
@@ -33,6 +35,7 @@ export const loader = async ({ request }) => {
     recentAlerts,
     topProductsRaw,
   ] = await Promise.all([
+    admin.graphql(`{ shop { currencyCode } }`),
     prisma.subscriber.count({
       where: { shopId: shop.id, status: "ACTIVE" },
     }),
@@ -64,6 +67,14 @@ export const loader = async ({ request }) => {
       take: 5,
     }),
   ]);
+
+  let currencyCode = "GBP";
+  try {
+    const shopInfo = await shopInfoResponse.json();
+    currencyCode = shopInfo?.data?.shop?.currencyCode ?? "GBP";
+  } catch {
+    // Non-fatal — fall back to GBP
+  }
 
   const revenue = conversionsResult._sum.orderValue
     ? Number(conversionsResult._sum.orderValue).toFixed(2)
@@ -98,6 +109,7 @@ export const loader = async ({ request }) => {
     recentActivity,
     plan: shop.plan,
     shopDomain: session.shop,
+    currencyCode,
   };
 };
 
@@ -121,7 +133,7 @@ function fmt(n) {
 }
 
 export default function Index() {
-  const { subscriberCount, alertsSent, conversions, revenue, topProducts, recentActivity, plan, shopDomain } =
+  const { subscriberCount, alertsSent, conversions, revenue, topProducts, recentActivity, plan, shopDomain, currencyCode } =
     useLoaderData();
   const navigate = useNavigate();
 
@@ -136,7 +148,7 @@ export default function Index() {
           </s-paragraph>
           <div style={{ marginTop: "12px" }}>
             <button
-              onClick={() => navigate("/app/settings")}
+              onClick={() => window.open(`https://${shopDomain}/admin/themes/current/editor?context=apps`, "_blank")}
               style={{
                 display: "inline-block",
                 padding: "8px 16px",
@@ -149,7 +161,7 @@ export default function Index() {
                 fontWeight: "600",
               }}
             >
-              View setup guide →
+              Open theme editor →
             </button>
           </div>
         </s-banner>
@@ -166,7 +178,7 @@ export default function Index() {
           <KpiCard value={fmt(subscriberCount)} label="Total Subscribers" accentColor="#1a56db" />
           <KpiCard value={fmt(alertsSent)} label="Alerts Sent (30d)" accentColor="#0ea5e9" />
           <KpiCard value={fmt(conversions)} label="Conversions (30d)" accentColor="#7c3aed" />
-          <KpiCard value={`£${revenue}`} label="Recovered Revenue (30d)" accentColor="#059669" />
+          <KpiCard value={new Intl.NumberFormat([], { style: "currency", currency: currencyCode }).format(parseFloat(revenue))} label="Recovered Revenue (30d)" accentColor="#059669" />
         </div>
       </s-section>
 
@@ -184,10 +196,10 @@ export default function Index() {
             Get set up in 3 steps
           </div>
           {[
-            { step: 1, text: "Install the widget on your theme", href: "/app/settings" },
-            { step: 2, text: "Mark a product as sold out to test alerts", href: "/app/products" },
+            { step: 1, text: "Add the RestockGuard block to your product page (click Add block → Apps → RestockGuard)", href: `https://${shopDomain}/admin/themes/current/editor?template=product`, external: true },
+            { step: 2, text: "Set a product to 0 inventory in Shopify", href: `https://${shopDomain}/admin/products`, external: true },
             { step: 3, text: "Customise your widget styling", href: "/app/styling" },
-          ].map(({ step, text, href }) => (
+          ].map(({ step, text, href, external }) => (
             <div
               key={step}
               style={{
@@ -217,7 +229,7 @@ export default function Index() {
               </div>
               <span style={{ flex: 1, fontSize: "14px", color: "#202223" }}>{text}</span>
               <button
-                onClick={() => navigate(href)}
+                onClick={() => external ? window.open(href, "_blank") : navigate(href)}
                 style={{ fontSize: "14px", color: "#1a56db", fontWeight: "600", background: "none", border: "none", cursor: "pointer", padding: 0 }}
               >
                 Go →

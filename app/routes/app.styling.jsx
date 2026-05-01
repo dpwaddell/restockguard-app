@@ -50,9 +50,11 @@ export const loader = async ({ request }) => {
     select: { settings: true, plan: true },
   });
 
+  const plan = shop?.plan ?? "FREE";
   return {
     styling: { ...STYLING_DEFAULTS, ...(shop?.settings?.styling ?? {}) },
-    plan: shop?.plan ?? "FREE",
+    showBranding: plan === "FREE" ? true : (shop?.settings?.showBranding ?? true),
+    plan,
   };
 };
 
@@ -87,7 +89,7 @@ export const action = async ({ request }) => {
 };
 
 export default function StylingPage() {
-  const { styling, plan } = useLoaderData();
+  const { styling, plan, showBranding } = useLoaderData();
   const fetcher = useFetcher();
   const saved = fetcher.data?.saved;
   const saving = fetcher.state !== "idle";
@@ -243,7 +245,7 @@ export default function StylingPage() {
             {/* Preview column */}
             <div style={{ flex: 1, minWidth: "280px" }}>
               <div style={sectionLabel}>Live preview</div>
-              <ProductPagePreview config={config} />
+              <ProductPagePreview config={config} showBranding={showBranding} />
             </div>
           </div>
         </s-section>
@@ -252,7 +254,7 @@ export default function StylingPage() {
   );
 }
 
-function ProductPagePreview({ config }) {
+function ProductPagePreview({ config, showBranding }) {
   const { buttonBg, buttonText, borderRadius, fontSize, widgetSize } = config;
   const fsPx = FONT_SIZE_PX[fontSize] || 14;
   const fs = `${fsPx}px`;
@@ -365,9 +367,11 @@ function ProductPagePreview({ config }) {
               Notify me
             </button>
           </div>
-          <p style={{ fontSize: "11px", color: "#8c9196", margin: "8px 0 0" }}>
-            Powered by RestockGuard
-          </p>
+          {showBranding && (
+            <p style={{ fontSize: "11px", color: "#8c9196", margin: "8px 0 0" }}>
+              Powered by RestockGuard
+            </p>
+          )}
         </div>
       </div>
     </div>

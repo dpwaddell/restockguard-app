@@ -22,7 +22,7 @@ export const action = async ({ request }) => {
   const previous = await redis.get(redisKey);
   const previousQty = previous === null ? 0 : parseInt(previous, 10);
 
-  await redis.set(redisKey, available);
+  await redis.set(redisKey, available, "EX", 86400 * 90);
 
   if (previousQty > 0) {
     // Already had stock — not a restock transition

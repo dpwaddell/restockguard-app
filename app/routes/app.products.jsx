@@ -6,7 +6,7 @@ import { UpgradePrompt } from "../lib/upgrade-prompt";
 import { PageHeader } from "../components/PageHeader";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
   const shop = await prisma.shop.findUnique({
     where: { shopDomain: session.shop },
@@ -16,10 +16,10 @@ export const loader = async ({ request }) => {
 
   let shopifyProducts = [];
   try {
-    const res = await fetch(
-      `https://${session.shop}/admin/api/2025-10/products.json?limit=50&fields=id,title,status,variants`,
-      { headers: { "X-Shopify-Access-Token": session.accessToken } },
-    );
+    const res = await admin.rest.get({
+      path: "products",
+      query: { limit: "50", fields: "id,title,status,variants" },
+    });
     const json = await res.json();
     shopifyProducts = json.products ?? [];
   } catch {
@@ -213,10 +213,10 @@ export default function ProductsPage() {
           <div style={emptyBox}>
             <div style={{ fontSize: "40px", marginBottom: "8px" }}>📦</div>
             <div style={{ fontSize: "16px", fontWeight: "600", color: "#202223", marginBottom: "4px" }}>
-              No products found
+              Upgrade to track products & variants
             </div>
             <div style={{ fontSize: "14px", color: "#6d7175", maxWidth: "320px" }}>
-              Make sure your Shopify store has products and the app has read_products access.
+              With Starter, see which products have the most demand and track waitlists by variant.
             </div>
           </div>
         ) : (

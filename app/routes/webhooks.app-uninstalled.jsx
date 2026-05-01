@@ -12,13 +12,13 @@ export const action = async ({ request }) => {
     data: { isActive: false, uninstalledAt: new Date() },
   });
 
-  // Best-effort: remove any waiting/delayed jobs for this shop from both queues
-  await Promise.allSettled([
+  console.log(`[${topic}] shop=${shop} deactivated`);
+
+  // Fire-and-forget: job cancellation must not block the 200 response
+  Promise.allSettled([
     cancelShopJobs(restockAlertsQueue, shop),
     cancelShopJobs(sendAlertQueue, shop),
-  ]);
-
-  console.log(`[${topic}] shop=${shop} deactivated`);
+  ]).catch(() => {});
 
   return new Response(null, { status: 200 });
 };

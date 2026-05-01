@@ -17,7 +17,10 @@ export const action = async ({ request }) => {
 
   const shopId = shopRecord.id;
 
-  // Delete all shop data in dependency order inside a transaction
+  // Delete all shop data in dependency order inside a transaction.
+  // Sessions are keyed by shop domain (no FK), so they are cleaned up separately.
+  await prisma.session.deleteMany({ where: { shop } });
+
   const results = await prisma.$transaction([
     // Conversions reference both subscribers and alert_sends — delete first
     prisma.conversion.deleteMany({ where: { shopId } }),

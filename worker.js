@@ -19,6 +19,8 @@ const connection = new IORedis(process.env.REDIS_URL || "redis://localhost:6379"
 const defaultJobOptions = {
   attempts: 3,
   backoff: { type: "exponential", delay: 1000 },
+  removeOnComplete: { count: 1000 },
+  removeOnFail: { count: 500 },
 };
 
 // ---------------------------------------------------------------------------
@@ -85,7 +87,10 @@ const restockWorker = new Worker(
           productId: String(productId),
           variantId: variantId ? String(variantId) : null,
         },
-        defaultJobOptions
+        {
+          ...defaultJobOptions,
+          jobId: `send-${sub.id}-${productId}`,
+        }
       );
     }
   },
@@ -133,35 +138,39 @@ const sendWorker = new Worker(
     );
 
     const fromName = shop.settings?.emailFromName || shopDomain;
-    const fromAddress = process.env.EMAIL_FROM_ADDRESS;
+    const fromAddress = shop.settings?.fromEmail || process.env.EMAIL_FROM_ADDRESS;
 
-    const { data, error } = await resend.emails.send({
-      from: `${fromName} <${fromAddress}>`,
-      to: subscriber.email,
-      subject: `Back in stock: ${product.title}`,
-      html: emailHtml,
-    });
+    const { data, error } = await resend.emails.send(
+      {
+        from: `${fromName} <${fromAddress}>`,
+        to: subscriber.email,
+        subject: `Back in stock: ${product.title}`,
+        html: emailHtml,
+      },
+      { idempotencyKey: job.id }
+    );
 
     if (error) {
       throw new Error(`Resend error: ${error.message}`);
     }
 
-    await prisma.alertSend.create({
-      data: {
-        shopId,
-        subscriberId: subscriber.id,
-        productId: String(productId),
-        variantId: variantId ? String(variantId) : null,
-        emailId: data.id,
-      },
-    });
+    await prisma.$transaction([
+      prisma.alertSend.create({
+        data: {
+          shopId,
+          subscriberId: subscriber.id,
+          productId: String(productId),
+          variantId: variantId ? String(variantId) : null,
+          emailId: data.id,
+        },
+      }),
+      prisma.subscriber.update({
+        where: { id: subscriber.id },
+        data: { status: "SENT" },
+      }),
+    ]);
 
-    await prisma.subscriber.update({
-      where: { id: subscriber.id },
-      data: { status: "SENT" },
-    });
-
-    console.log(`[send-alert] sent email to ${subscriber.email} for product=${productId}`);
+    console.log(`[send-alert] sent email id=${subscriber.id} for product=${productId}`);
   },
   { connection, concurrency: 5 }
 );
@@ -177,7 +186,7 @@ async function resolveInventoryItem(shopDomain, accessToken, inventoryItemId) {
     }
   }`;
 
-  const res = await fetch(`https://${shopDomain}/admin/api/2025-01/graphql.json`, {
+  const res = await fetch(`https://${shopDomain}/admin/api/2025-10/graphql.json`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -203,7 +212,7 @@ async function resolveInventoryItem(shopDomain, accessToken, inventoryItemId) {
 
 async function fetchProduct(shopDomain, accessToken, productId, variantId) {
   const res = await fetch(
-    `https://${shopDomain}/admin/api/2025-01/products/${productId}.json`,
+    `https://${shopDomain}/admin/api/2025-10/products/${productId}.json`,
     { headers: { "X-Shopify-Access-Token": accessToken } }
   );
 

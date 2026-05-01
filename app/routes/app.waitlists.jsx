@@ -8,13 +8,13 @@ const PAGE_SIZE = 50;
 const STATUS_TABS = ["all", "active", "sent", "unsubscribed"];
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
   const shop = await prisma.shop.findUnique({
     where: { shopDomain: session.shop },
   });
 
-  if (!shop) return { subscribers: [], total: 0, page: 1, q: "", status: "all", plan: "FREE" };
+  if (!shop) return { subscribers: [], total: 0, page: 1, q: "", status: "all", plan: "FREE", productTitleMap: {} };
 
   const url = new URL(request.url);
   const q = url.searchParams.get("q") || "";
@@ -45,11 +45,37 @@ export const loader = async ({ request }) => {
     prisma.subscriber.count({ where }),
   ]);
 
+  // Fetch product titles for the current page
+  const productTitleMap = {};
+  const uniqueProductIds = [...new Set(subscribers.map((s) => s.productId))];
+  if (uniqueProductIds.length > 0) {
+    try {
+      const gids = uniqueProductIds.map((id) => `gid://shopify/Product/${id}`);
+      const response = await admin.graphql(
+        `query GetProductTitles($ids: [ID!]!) {
+          nodes(ids: $ids) {
+            ... on Product { id title }
+          }
+        }`,
+        { variables: { ids: gids } }
+      );
+      const json = await response.json();
+      for (const node of json?.data?.nodes ?? []) {
+        if (node?.id && node?.title) {
+          productTitleMap[node.id.split("/").pop()] = node.title;
+        }
+      }
+    } catch {
+      // Non-fatal — fall back to raw IDs
+    }
+  }
+
   return {
     subscribers: subscribers.map((s) => ({
       ...s,
       createdAt: s.createdAt.toISOString(),
     })),
+    productTitleMap,
     total,
     page,
     q,
@@ -68,6 +94,10 @@ export const action = async ({ request }) => {
   });
 
   if (!shop) return new Response("Not found", { status: 404 });
+
+  if (shop.plan === "FREE") {
+    return new Response("CSV export requires a Starter plan or above.", { status: 403 });
+  }
 
   const all = await prisma.subscriber.findMany({
     where: { shopId: shop.id },
@@ -97,7 +127,7 @@ export const action = async ({ request }) => {
 };
 
 export default function WaitlistsPage() {
-  const { subscribers, total, page, q, status, totalPages, plan } = useLoaderData();
+  const { subscribers, total, page, q, status, totalPages, plan, productTitleMap } = useLoaderData();
   const navigate = useNavigate();
 
   return (
@@ -177,28 +207,42 @@ export default function WaitlistsPage() {
           {/* Table / empty state */}
           {subscribers.length === 0 ? (
             <div style={emptyBox}>
-              <div style={{ fontSize: "40px", marginBottom: "8px" }}>📧</div>
-              <div style={{ fontSize: "16px", fontWeight: "600", color: "#202223", marginBottom: "4px" }}>
-                No subscribers yet
-              </div>
-              <div style={{ fontSize: "14px", color: "#6d7175", marginBottom: "16px", maxWidth: "320px" }}>
-                Install the RestockGuard widget on your store theme to start collecting sign-ups.
-              </div>
-              <button
-                onClick={() => navigate("/app/settings")}
-                style={{
-                  padding: "8px 20px",
-                  backgroundColor: "#1a56db",
-                  color: "#fff",
-                  borderRadius: "6px",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                }}
-              >
-                Go to Settings
-              </button>
+              {q || status !== "all" ? (
+                <>
+                  <div style={{ fontSize: "40px", marginBottom: "8px" }}>🔍</div>
+                  <div style={{ fontSize: "16px", fontWeight: "600", color: "#202223", marginBottom: "4px" }}>
+                    No matching subscribers
+                  </div>
+                  <div style={{ fontSize: "14px", color: "#6d7175", maxWidth: "320px" }}>
+                    Try a different search term or clear your filters.
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: "40px", marginBottom: "8px" }}>📧</div>
+                  <div style={{ fontSize: "16px", fontWeight: "600", color: "#202223", marginBottom: "4px" }}>
+                    No subscribers yet
+                  </div>
+                  <div style={{ fontSize: "14px", color: "#6d7175", marginBottom: "16px", maxWidth: "320px" }}>
+                    Install the RestockGuard widget on your store theme to start collecting sign-ups.
+                  </div>
+                  <button
+                    onClick={() => navigate("/app/settings")}
+                    style={{
+                      padding: "8px 20px",
+                      backgroundColor: "#1a56db",
+                      color: "#fff",
+                      borderRadius: "6px",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Go to Settings
+                  </button>
+                </>
+              )}
             </div>
           ) : (
             <>
@@ -206,7 +250,7 @@ export default function WaitlistsPage() {
                 <thead>
                   <tr style={{ backgroundColor: "#f6f6f7" }}>
                     <th style={thStyle}>Email</th>
-                    <th style={thStyle}>Product ID</th>
+                    <th style={thStyle}>Product</th>
                     <th style={thStyle}>Variant ID</th>
                     <th style={thStyle}>Signed up</th>
                     <th style={thStyle}>Status</th>
@@ -222,8 +266,10 @@ export default function WaitlistsPage() {
                       }}
                     >
                       <td style={{ ...tdStyle, fontWeight: "500" }}>{sub.email}</td>
-                      <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "12px", color: "#6d7175" }}>
-                        {sub.productId}
+                      <td style={tdStyle}>
+                        {productTitleMap[sub.productId]
+                          ? productTitleMap[sub.productId]
+                          : <code style={{ fontSize: "12px", color: "#6d7175" }}>{sub.productId}</code>}
                       </td>
                       <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "12px", color: "#6d7175" }}>
                         {sub.variantId ?? "—"}

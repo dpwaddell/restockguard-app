@@ -28,13 +28,13 @@ function createBillingConfig() {
     },
     Growth: {
       lineItems: [
-        { amount: 19, currencyCode: "USD", interval: BillingInterval.Every30Days },
+        { amount: 29, currencyCode: "USD", interval: BillingInterval.Every30Days },
       ],
       trialDays: 14,
     },
     Premium: {
       lineItems: [
-        { amount: 39, currencyCode: "USD", interval: BillingInterval.Every30Days },
+        { amount: 79, currencyCode: "USD", interval: BillingInterval.Every30Days },
       ],
       trialDays: 14,
     },

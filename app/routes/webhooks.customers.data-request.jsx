@@ -6,7 +6,7 @@ export const action = async ({ request }) => {
   const customerEmail = payload?.customer?.email;
   const customerId = payload?.customer?.id;
 
-  console.log(`[${topic}] shop=${shop} customer=${customerEmail} id=${customerId}`);
+  console.log(`[${topic}] shop=${shop} customer_id=${customerId}`);
 
   if (!customerEmail) {
     console.warn(`[${topic}] No customer email in payload for shop=${shop}`);
@@ -36,6 +36,15 @@ export const action = async ({ request }) => {
     },
   });
 
+  const subscriberIds = subscribers.map((s) => s.id);
+
+  const alertSends = subscriberIds.length > 0
+    ? await prisma.alertSend.findMany({
+        where: { subscriberId: { in: subscriberIds } },
+        select: { id: true, productId: true, variantId: true, sentAt: true },
+      })
+    : [];
+
   const responseData = {
     shop_domain: shop,
     customer_email: customerEmail,
@@ -51,11 +60,17 @@ export const action = async ({ request }) => {
         source: s.source,
         signed_up_at: s.createdAt.toISOString(),
       })),
+      alert_sends: alertSends.map((a) => ({
+        id: a.id,
+        product_id: a.productId,
+        variant_id: a.variantId,
+        sent_at: a.sentAt.toISOString(),
+      })),
     },
   };
 
   console.log(
-    `[${topic}] Returning ${subscribers.length} subscriber record(s) for customer=${customerEmail} shop=${shop}`
+    `[${topic}] Returning ${subscribers.length} subscriber(s), ${alertSends.length} alert send(s) for customer_id=${customerId} shop=${shop}`
   );
 
   return new Response(JSON.stringify(responseData), {

@@ -47,7 +47,8 @@ export const action = async ({ request }) => {
   const planName = formData.get("plan"); // "Starter" | "Growth" | "Premium"
 
   const shopName = session.shop.replace(".myshopify.com", "");
-  const returnUrl = `https://admin.shopify.com/store/${shopName}/apps/restockguard-1/app`;
+  const appHandle = process.env.SHOPIFY_APP_HANDLE;
+  const returnUrl = `https://admin.shopify.com/store/${shopName}/apps/${appHandle}/app`;
 
   try {
     await billing.request({
@@ -259,6 +260,11 @@ export default function UpgradePage() {
                             {loading ? "Redirecting…" : `Downgrade to ${plan.label}`}
                           </button>
                         </fetcher.Form>
+                      ) : plan.key === "FREE" && !isCurrent ? (
+                        <p style={{ margin: 0, fontSize: "13px", color: "#6d7175", lineHeight: "1.5" }}>
+                          To downgrade to Free, cancel your subscription in{" "}
+                          <strong>Shopify Admin → Settings → Billing &amp; subscriptions</strong>.
+                        </p>
                       ) : null}
                     </div>
                   </div>

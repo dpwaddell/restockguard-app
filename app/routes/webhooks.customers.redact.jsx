@@ -6,7 +6,7 @@ export const action = async ({ request }) => {
   const customerEmail = payload?.customer?.email;
   const customerId = payload?.customer?.id;
 
-  console.log(`[${topic}] shop=${shop} customer=${customerEmail} id=${customerId}`);
+  console.log(`[${topic}] shop=${shop} customer_id=${customerId}`);
 
   if (!customerEmail) {
     console.warn(`[${topic}] No customer email in payload for shop=${shop}`);
@@ -32,14 +32,28 @@ export const action = async ({ request }) => {
   const subscriberIds = subscribers.map((s) => s.id);
 
   if (subscriberIds.length === 0) {
-    console.log(`[${topic}] No records found for customer=${customerEmail} shop=${shop}`);
+    console.log(`[${topic}] No records found for customer_id=${customerId} shop=${shop}`);
     return new Response(null, { status: 200 });
   }
 
-  // Delete in dependency order: conversions → alert_sends → subscribers
+  // Collect alertSend IDs so we can safely delete conversions that reference
+  // them via alertSendId (which is nullable and may differ from subscriberId).
+  const alertSends = await prisma.alertSend.findMany({
+    where: { subscriberId: { in: subscriberIds } },
+    select: { id: true },
+  });
+  const alertSendIds = alertSends.map((a) => a.id);
+
+  // Delete in dependency order: conversions → alert_sends → subscribers.
+  // Conversions are matched by subscriberId OR alertSendId to avoid FK violations.
   const [deletedConversions, deletedAlertSends, deletedSubscribers] = await prisma.$transaction([
     prisma.conversion.deleteMany({
-      where: { subscriberId: { in: subscriberIds } },
+      where: {
+        OR: [
+          { subscriberId: { in: subscriberIds } },
+          { alertSendId: { in: alertSendIds } },
+        ],
+      },
     }),
     prisma.alertSend.deleteMany({
       where: { subscriberId: { in: subscriberIds } },
@@ -50,7 +64,7 @@ export const action = async ({ request }) => {
   ]);
 
   console.log(
-    `[${topic}] Redacted customer=${customerEmail} shop=${shop}: ` +
+    `[${topic}] Redacted customer_id=${customerId} shop=${shop}: ` +
     `${deletedSubscribers.count} subscriber(s), ` +
     `${deletedAlertSends.count} alert send(s), ` +
     `${deletedConversions.count} conversion(s)`

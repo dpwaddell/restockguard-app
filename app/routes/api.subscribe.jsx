@@ -1,4 +1,12 @@
 import { prisma } from "../shopify.server";
+import { redis } from "../lib/redis.server.js";
+
+const PLAN_SUBSCRIBER_LIMITS = {
+  FREE: 100,
+  STARTER: 1_000,
+  GROWTH: 5_000,
+  PREMIUM: Infinity,
+};
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -6,19 +14,13 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-// Simple in-memory rate limiter: 5 requests per IP per minute
-const rateLimitMap = new Map();
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-  if (!entry || entry.resetAt < now) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
-    return true;
+async function checkRateLimit(ip) {
+  const key = `ratelimit:subscribe:${ip}`;
+  const count = await redis.incr(key);
+  if (count === 1) {
+    await redis.expire(key, 60);
   }
-  if (entry.count >= 5) return false;
-  entry.count++;
-  return true;
+  return count <= 5;
 }
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,7 +50,7 @@ export const action = async ({ request }) => {
     request.headers.get("x-real-ip") ||
     "unknown";
 
-  if (!checkRateLimit(ip)) {
+  if (!await checkRateLimit(ip)) {
     return json({ error: "Too many requests. Please try again later." }, 429);
   }
 
@@ -81,30 +83,42 @@ export const action = async ({ request }) => {
   // FREE plan: product-level only (ignore variantId)
   const variantId = shop.plan === "FREE" ? null : (rawVariantId || null);
 
-  const existing = await prisma.subscriber.findFirst({
-    where: { email, shopId: shop.id, productId: String(productId), variantId },
-  });
-
-  if (existing) {
-    if (existing.status === "UNSUBSCRIBED") {
-      await prisma.subscriber.update({
-        where: { id: existing.id },
-        data: { status: "ACTIVE" },
-      });
-    }
-    // Already ACTIVE — idempotent, no-op
-  } else {
-    await prisma.subscriber.create({
-      data: {
-        shopId: shop.id,
-        email,
-        productId: String(productId),
-        variantId,
-        status: "ACTIVE",
-        source: "storefront",
-      },
+  // Enforce per-plan subscriber cap (count only active subscribers)
+  const limit = PLAN_SUBSCRIBER_LIMITS[shop.plan] ?? 100;
+  if (limit !== Infinity) {
+    const activeCount = await prisma.subscriber.count({
+      where: { shopId: shop.id, status: { in: ["ACTIVE", "SENT"] } },
     });
+    if (activeCount >= limit) {
+      return json(
+        { error: "This store's notification list is currently full. Please try again later." },
+        429,
+      );
+    }
   }
+
+  await prisma.subscriber.upsert({
+    where: {
+      email_shopId_productId_variantId: {
+        email,
+        shopId: shop.id,
+        productId: String(productId),
+        variantId: variantId ?? null,
+      },
+    },
+    create: {
+      shopId: shop.id,
+      email,
+      productId: String(productId),
+      variantId,
+      status: "ACTIVE",
+      source: "storefront",
+    },
+    update: {
+      // Re-activate unsubscribed entries; leave ACTIVE/SENT untouched
+      status: "ACTIVE",
+    },
+  });
 
   // Increment today's analytics
   const today = new Date();

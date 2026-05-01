@@ -31,7 +31,7 @@ export const PLANS = {
   GROWTH: {
     key: "GROWTH",
     label: "Growth",
-    amount: 19,
+    amount: 29,
     billingName: "Growth",
     features: [
       "Up to 5,000 subscribers",
@@ -43,7 +43,7 @@ export const PLANS = {
   PREMIUM: {
     key: "PREMIUM",
     label: "Premium",
-    amount: 39,
+    amount: 79,
     billingName: "Premium",
     features: [
       "Unlimited subscribers",
