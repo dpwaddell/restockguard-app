@@ -391,6 +391,7 @@ function StatusBadge({ status }) {
   const styles = {
     ACTIVE: { backgroundColor: "#d4edda", color: "#155724", border: "1px solid #c3e6cb" },
     SENT: { backgroundColor: "#cce5ff", color: "#004085", border: "1px solid #b8daff" },
+    CONVERTED: { backgroundColor: "#ede9fe", color: "#5b21b6", border: "1px solid #c4b5fd" },
     UNSUBSCRIBED: { backgroundColor: "#f1f2f3", color: "#6d7175", border: "1px solid #d1d5db" },
     PENDING: { backgroundColor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba" },
   };
