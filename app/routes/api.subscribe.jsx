@@ -97,28 +97,31 @@ export const action = async ({ request }) => {
     }
   }
 
-  await prisma.subscriber.upsert({
+  const existingSub = await prisma.subscriber.findFirst({
     where: {
-      email_shopId_productId_variantId: {
-        email,
-        shopId: shop.id,
-        productId: String(productId),
-        variantId: variantId ?? null,
-      },
-    },
-    create: {
-      shopId: shop.id,
       email,
+      shopId: shop.id,
       productId: String(productId),
-      variantId,
-      status: "ACTIVE",
-      source: "storefront",
-    },
-    update: {
-      // Re-activate unsubscribed entries; leave ACTIVE/SENT untouched
-      status: "ACTIVE",
+      variantId: variantId ?? null,
     },
   });
+  if (existingSub) {
+    await prisma.subscriber.update({
+      where: { id: existingSub.id },
+      data: { status: "ACTIVE" },
+    });
+  } else {
+    await prisma.subscriber.create({
+      data: {
+        shopId: shop.id,
+        email,
+        productId: String(productId),
+        variantId: variantId ?? null,
+        status: "ACTIVE",
+        source: "storefront",
+      },
+    });
+  }
 
   // Increment today's analytics
   const today = new Date();
