@@ -80,11 +80,20 @@ export const loader = async ({ request }) => {
     ? Number(conversionsResult._sum.orderValue).toFixed(2)
     : "0.00";
 
+  // Collect all unique product IDs across top products AND recent activity
+  // so a single GraphQL call covers every label we need to render.
+  const allProductIds = [
+    ...new Set([
+      ...topProductsRaw.map((p) => p.productId),
+      ...recentSignups.map((s) => s.productId),
+      ...recentAlerts.map((a) => a.productId),
+    ]),
+  ];
+
   const productNameMap = {};
-  const topProductIds = topProductsRaw.map((p) => p.productId);
-  if (topProductIds.length > 0) {
+  if (allProductIds.length > 0) {
     try {
-      const gids = topProductIds.map((id) => `gid://shopify/Product/${id}`);
+      const gids = allProductIds.map((id) => `gid://shopify/Product/${id}`);
       const response = await admin.graphql(
         `query GetProductTitles($ids: [ID!]!) {
           nodes(ids: $ids) {
@@ -105,18 +114,28 @@ export const loader = async ({ request }) => {
   }
 
   const recentActivity = [
-    ...recentSignups.map((s) => ({
-      type: "signup",
-      label: `${s.email} subscribed`,
-      productId: s.productId,
-      date: s.createdAt.toISOString(),
-    })),
-    ...recentAlerts.map((a) => ({
-      type: "alert",
-      label: `Alert sent for product …${a.productId.slice(-8)}`,
-      productId: a.productId,
-      date: a.sentAt.toISOString(),
-    })),
+    ...recentSignups.map((s) => {
+      const productName = productNameMap[s.productId];
+      return {
+        type: "signup",
+        label: productName
+          ? `${s.email} signed up for ${productName}`
+          : `${s.email} subscribed`,
+        productId: s.productId,
+        date: s.createdAt.toISOString(),
+      };
+    }),
+    ...recentAlerts.map((a) => {
+      const productName = productNameMap[a.productId];
+      return {
+        type: "alert",
+        label: productName
+          ? `Alert sent for ${productName}`
+          : `Alert sent for product …${a.productId.slice(-8)}`,
+        productId: a.productId,
+        date: a.sentAt.toISOString(),
+      };
+    }),
   ]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 10);

@@ -14,7 +14,7 @@ export const loader = async ({ request }) => {
     where: { shopDomain: session.shop },
   });
 
-  if (!shop) return { subscribers: [], total: 0, page: 1, q: "", status: "all", plan: "FREE", productTitleMap: {} };
+  if (!shop) return { subscribers: [], total: 0, page: 1, q: "", status: "all", plan: "FREE", productTitleMap: {}, shopDomain: session.shop };
 
   const url = new URL(request.url);
   const q = url.searchParams.get("q") || "";
@@ -86,7 +86,6 @@ export const loader = async ({ request }) => {
   };
 };
 
-// CSV export action
 export const action = async ({ request }) => {
   const { session } = await authenticate.admin(request);
 
@@ -96,6 +95,33 @@ export const action = async ({ request }) => {
 
   if (!shop) return new Response("Not found", { status: 404 });
 
+  const formData = await request.formData();
+  const _action = formData.get("_action");
+
+  if (_action === "delete") {
+    const subscriberId = formData.get("subscriberId");
+
+    // Verify the subscriber belongs to this shop before deleting
+    const subscriber = await prisma.subscriber.findFirst({
+      where: { id: subscriberId, shopId: shop.id },
+    });
+    if (!subscriber) return Response.json({ error: "Not found" }, { status: 404 });
+
+    // AlertSend has a non-nullable FK to subscriber — delete those first.
+    // Conversion has a nullable FK — null it out to preserve revenue history.
+    await prisma.$transaction([
+      prisma.conversion.updateMany({
+        where: { subscriberId },
+        data: { subscriberId: null },
+      }),
+      prisma.alertSend.deleteMany({ where: { subscriberId } }),
+      prisma.subscriber.delete({ where: { id: subscriberId } }),
+    ]);
+
+    return Response.json({ ok: true });
+  }
+
+  // CSV export
   if (shop.plan === "FREE") {
     return new Response("CSV export requires a Starter plan or above.", { status: 403 });
   }
@@ -171,6 +197,7 @@ export default function WaitlistsPage() {
             </Form>
             {plan !== "FREE" && (
               <Form method="post">
+                <input type="hidden" name="_action" value="export" />
                 <button type="submit" style={secondaryBtn}>Export CSV</button>
               </Form>
             )}
@@ -255,6 +282,7 @@ export default function WaitlistsPage() {
                     <th style={thStyle}>Variant ID</th>
                     <th style={thStyle}>Signed up</th>
                     <th style={thStyle}>Status</th>
+                    <th style={thStyle}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -293,6 +321,23 @@ export default function WaitlistsPage() {
                       </td>
                       <td style={tdStyle}>
                         <StatusBadge status={sub.status} />
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: "right" }}>
+                        <Form
+                          method="post"
+                          style={{ display: "inline" }}
+                          onSubmit={(e) => {
+                            if (!window.confirm(`Delete ${sub.email} from this waitlist?`)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          <input type="hidden" name="_action" value="delete" />
+                          <input type="hidden" name="subscriberId" value={sub.id} />
+                          <button type="submit" style={deleteBtn}>
+                            Delete
+                          </button>
+                        </Form>
                       </td>
                     </tr>
                   ))}
@@ -383,6 +428,16 @@ const secondaryBtn = {
   fontSize: "14px",
   cursor: "pointer",
   whiteSpace: "nowrap",
+  fontWeight: "500",
+};
+const deleteBtn = {
+  padding: "5px 12px",
+  borderRadius: "6px",
+  border: "1px solid #fca5a5",
+  backgroundColor: "#fff",
+  color: "#dc2626",
+  fontSize: "12px",
+  cursor: "pointer",
   fontWeight: "500",
 };
 const thStyle = {
