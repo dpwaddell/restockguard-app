@@ -12,20 +12,26 @@ export const action = async ({ request }) => {
     `[${topic}] shop=${shop} inventory_item_id=${inventory_item_id} location_id=${location_id} available=${available}`
   );
 
+  // Always update the dedup key so "went to 0" is recorded.
+  // If we only update it on available > 0 (old behaviour), the key retains a
+  // stale positive value when stock drops, and the next restock is incorrectly
+  // blocked by the previousQty > 0 check.
+  const redisKey = `inv:${shop}:${inventory_item_id}`;
+  const previous = await redis.get(redisKey);
+  const previousQty = previous === null ? 0 : parseInt(previous, 10);
+
+  await redis.set(redisKey, available ?? 0, "EX", 86400 * 90);
+
   // Only proceed when stock goes positive
   if (!available || available <= 0) {
     return new Response(null, { status: 200 });
   }
 
   // Dedup: only enqueue when transitioning from 0 (or unknown) → positive
-  const redisKey = `inv:${shop}:${inventory_item_id}`;
-  const previous = await redis.get(redisKey);
-  const previousQty = previous === null ? 0 : parseInt(previous, 10);
-
-  await redis.set(redisKey, available, "EX", 86400 * 90);
-
   if (previousQty > 0) {
-    // Already had stock — not a restock transition
+    console.log(
+      `[${topic}] skipping — previousQty=${previousQty} already positive for inventoryItemId=${inventory_item_id}`
+    );
     return new Response(null, { status: 200 });
   }
 

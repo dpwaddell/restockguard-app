@@ -94,7 +94,9 @@ const restockWorker = new Worker(
         },
         {
           ...defaultJobOptions,
-          jobId: `send-${sub.id}-${productId}`,
+          // Scope jobId to this restock event (job.id) so a new restock always
+          // creates fresh send-alert jobs even if a previous attempt failed.
+          jobId: `send-${sub.id}-${productId}-${job.id}`,
         }
       );
     }
