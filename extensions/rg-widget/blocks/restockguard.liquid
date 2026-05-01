@@ -21,55 +21,6 @@
 
 <script src="{{ 'restockguard.js' | asset_url }}" defer></script>
 
-<script>
-  (function () {
-    function relocateWidget() {
-      var widget = document.getElementById('restockguard-container');
-      if (!widget) return false;
-
-      var needsRelocation = false;
-      var node = widget.parentElement;
-      while (node) {
-        if (
-          node.tagName === 'BUTTON' ||
-          node.id === 'ProductSubmitButton' ||
-          (node.classList && node.classList.contains('product-form__buttons'))
-        ) {
-          needsRelocation = true;
-          break;
-        }
-        node = node.parentElement;
-      }
-
-      if (!needsRelocation) return true;
-
-      var buttonsContainer = document.querySelector('.product-form__buttons');
-      if (!buttonsContainer) return false;
-
-      buttonsContainer.insertAdjacentElement('afterend', widget);
-      return true;
-    }
-
-    function init() {
-      if (relocateWidget()) return;
-
-      var observer = new MutationObserver(function () {
-        if (relocateWidget()) {
-          observer.disconnect();
-        }
-      });
-
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
-</script>
-
 {% schema %}
 {
   "name": "RestockGuard",

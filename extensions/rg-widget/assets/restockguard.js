@@ -86,9 +86,16 @@
       '</p>' +
       '<p id="rg-error" style="display:none;font-size:' + fontSize + ';color:#dc2626;margin:8px 0 0"></p>';
 
-    var container = document.getElementById('restockguard-container');
-    if (container) {
-      container.appendChild(div);
+    var anchor =
+      document.querySelector('[name="add"]') ||
+      document.querySelector('[type="submit"][data-add-to-cart]') ||
+      document.querySelector('form[action*="/cart"]') ||
+      document.querySelector('main');
+
+    if (anchor) {
+      anchor.parentNode && anchor.nodeType === 1 && anchor.tagName === 'FORM'
+        ? anchor.parentNode.insertBefore(div, anchor.nextSibling)
+        : anchor.appendChild(div);
     }
 
     widgetEl = div;
@@ -241,7 +248,6 @@
         cfg.preorderShipsBy = preorderConfig.shipsBy || '';
       }
 
-      if (document.getElementById(WIDGET_ID)) return;
       buildWidget();
       watchVariants();
 
