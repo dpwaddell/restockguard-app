@@ -184,32 +184,6 @@ export default function Index() {
   return (
     <s-page heading={`${getGreeting()}, ${storeName(shopDomain)}`}>
       <PageHeader currentTab="home" plan={plan} />
-      {subscriberCount === 0 && (
-        <s-banner tone="info" title="Get started with RestockGuard">
-          <s-paragraph>
-            Install the RestockGuard widget snippet on your theme, then mark a product as
-            sold-out to test the full alert flow end-to-end.
-          </s-paragraph>
-          <div style={{ marginTop: "12px" }}>
-            <button
-              onClick={() => window.open(`https://${shopDomain}/admin/themes/current/editor?context=apps`, "_blank")}
-              style={{
-                display: "inline-block",
-                padding: "8px 16px",
-                backgroundColor: "#1a56db",
-                color: "#fff",
-                borderRadius: "6px",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "600",
-              }}
-            >
-              Open theme editor →
-            </button>
-          </div>
-        </s-banner>
-      )}
 
       <s-section heading="Overview">
         <div
@@ -226,62 +200,6 @@ export default function Index() {
         </div>
       </s-section>
 
-      {subscriberCount === 0 && (
-        <div
-          style={{
-            backgroundColor: "#fff",
-            border: "1px solid #e1e3e5",
-            borderRadius: "10px",
-            padding: "24px",
-            marginBottom: "16px",
-          }}
-        >
-          <div style={{ fontSize: "16px", fontWeight: "700", color: "#202223", marginBottom: "20px" }}>
-            Get set up in 3 steps
-          </div>
-          {[
-            { step: 1, text: "Add the RestockGuard block to your product page (click Add block → Apps → RestockGuard)", href: `https://${shopDomain}/admin/themes/current/editor?template=product`, external: true },
-            { step: 2, text: "Set a product to 0 inventory in Shopify", href: `https://${shopDomain}/admin/products`, external: true },
-            { step: 3, text: "Customise your widget styling", href: "/app/styling" },
-          ].map(({ step, text, href, external }) => (
-            <div
-              key={step}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "16px",
-                padding: "14px 0",
-                borderBottom: step < 3 ? "1px solid #f1f2f3" : "none",
-              }}
-            >
-              <div
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  backgroundColor: "#1a56db",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "14px",
-                  fontWeight: "700",
-                  flexShrink: 0,
-                }}
-              >
-                {step}
-              </div>
-              <span style={{ flex: 1, fontSize: "14px", color: "#202223" }}>{text}</span>
-              <button
-                onClick={() => external ? window.open(href, "_blank") : navigate(href)}
-                style={{ fontSize: "14px", color: "#1a56db", fontWeight: "600", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-              >
-                Go →
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
 
       <s-section heading="Top Requested Products">
         {topProducts.length === 0 ? (
