@@ -93,9 +93,14 @@
       document.querySelector('main');
 
     if (anchor) {
-      anchor.parentNode && anchor.nodeType === 1 && anchor.tagName === 'FORM'
-        ? anchor.parentNode.insertBefore(div, anchor.nextSibling)
-        : anchor.appendChild(div);
+      // Always insert after the enclosing <form> so the widget is never
+      // trapped inside a button or form element (which disables child inputs).
+      var formEl = anchor.tagName === 'FORM' ? anchor : anchor.closest('form');
+      if (formEl && formEl.parentNode) {
+        formEl.parentNode.insertBefore(div, formEl.nextSibling);
+      } else {
+        anchor.appendChild(div);
+      }
     }
 
     widgetEl = div;
