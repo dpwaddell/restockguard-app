@@ -57,12 +57,16 @@ const restockWorker = new Worker(
       variantId = resolved.variantId;
     }
 
+    // Match subscribers for this specific variant AND product-level subscribers
+    // (variantId = null means "any variant" — always notify them on any restock)
     const subscribers = await prisma.subscriber.findMany({
       where: {
         shopId,
         productId: String(productId),
-        variantId: variantId ?? null,
         status: "ACTIVE",
+        ...(variantId
+          ? { OR: [{ variantId: String(variantId) }, { variantId: null }] }
+          : { variantId: null }),
       },
     });
 
@@ -85,7 +89,8 @@ const restockWorker = new Worker(
           shopId,
           shopDomain: shop.shopDomain,
           productId: String(productId),
-          variantId: variantId ? String(variantId) : null,
+          // Use the subscriber's own variantId so the email reflects what they signed up for
+          variantId: sub.variantId ? String(sub.variantId) : null,
         },
         {
           ...defaultJobOptions,
